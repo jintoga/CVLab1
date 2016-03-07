@@ -14,13 +14,13 @@ private:
 
 public:
     Sobel();
-    Sobel(Matrix matrix)
+    Sobel(Matrix& matrix)
         :matrix(matrix)
     {};
-    Matrix getGrayScaleMatrix(QImage input);
+    Matrix getGrayScaleMatrix(QImage& input);
     double intToDouble(int intensity);
     int doubleToInt(double intensity);
-    QImage exportImage(Matrix matrix);
+    QImage exportImage(Matrix& matrix);
     Matrix getMatrix();
 
     void normalize(){
@@ -49,7 +49,7 @@ public:
              1,  2,  1
         };
     public:
-        Builder(Matrix matrix)
+        Builder(Matrix& matrix)
             :matrix(matrix)
         {}
         Builder& sobelX()
@@ -57,7 +57,7 @@ public:
             printf("sobelX\n");
             Matrix sob(size,size,sobel_x_vector);
 
-            this->matrix = multiMatrix(this->matrix,sob);
+            this->matrix = convolution(this->matrix,sob);
 
             return *this;
         }
@@ -67,12 +67,12 @@ public:
             printf("sobelY\n");
             Matrix sob(size,size,sobel_y_vector);
 
-            this->matrix = multiMatrix(this->matrix,sob);
+            this->matrix = convolution(this->matrix,sob);
 
             return *this;
         }
 
-        Builder& sobelXY(Matrix mat1,Matrix mat2)
+        Builder& sobelXY(Matrix& mat1,Matrix& mat2)
         {
             printf("sobelXY\n");
             Matrix result(mat1.getHeight(),mat1.getWidth());
@@ -95,7 +95,7 @@ public:
             return Sobel(this->matrix);
         }
 
-        Matrix multiMatrix(Matrix mat1,Matrix mat2)
+        Matrix convolution(Matrix& mat1,Matrix& mat2)
         {
             Matrix result(mat1.getHeight(),mat1.getWidth());
 

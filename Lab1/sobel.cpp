@@ -13,7 +13,7 @@ Matrix Sobel::getMatrix()
     return matrix;
 }
 
-Matrix Sobel::getGrayScaleMatrix(QImage qImage)
+Matrix Sobel::getGrayScaleMatrix(QImage& qImage)
 {
     Matrix grayScaleMatrix(qImage);
     for (int i = 0; i < grayScaleMatrix.getHeight(); i++) {
@@ -29,7 +29,7 @@ Matrix Sobel::getGrayScaleMatrix(QImage qImage)
     return grayScaleMatrix;
 }
 
-QImage Sobel::exportImage(Matrix matrix)
+QImage Sobel::exportImage(Matrix& matrix)
 {
 
     QImage result(matrix.getWidth(),matrix.getHeight(),QImage::Format_RGB32);

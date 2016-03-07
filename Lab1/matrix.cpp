@@ -15,7 +15,7 @@ Matrix::Matrix(int height,int width)
    printf("size:%d\n",intensities.capacity());
 }
 
-Matrix::Matrix(QImage qImage)
+Matrix::Matrix(QImage& qImage)
     :Matrix(qImage.height(),qImage.width())
 {
 }

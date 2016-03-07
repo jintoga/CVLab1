@@ -6,7 +6,7 @@ class Matrix
 public:
     Matrix();
     Matrix(int height,int width);
-    Matrix(QImage qImage);
+    Matrix(QImage& qImage);
     Matrix(int height,int width,std::vector<double> intensities);
     void setIntensity(int row,int col,double intensity);
     int getIndex(int row,int col);
