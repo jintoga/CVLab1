@@ -11,31 +11,21 @@ int main(int argc, char *argv[])
 
     Sobel sobel;
     Matrix grayscaleMatrix = sobel.getGrayScaleMatrix(qImage);
+    sobel.exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/outputs/grayscale.png");
 
-    sobel.exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/outputs/grayscale.jpg");
 
-    Sobel::Builder builderSobelX(grayscaleMatrix);
-    Sobel::Builder builderSobelY(grayscaleMatrix);
+    Matrix matSobelX = Sobel::Builder(grayscaleMatrix).sobelX().build().getMatrix();
+    Matrix matSobelY = Sobel::Builder(grayscaleMatrix).sobelY().build().getMatrix();
 
-    Matrix matSobelX = builderSobelX.sobelX().build().getMatrix();
-    Matrix matSobelY = builderSobelY.sobelY().build().getMatrix();
+    sobel.exportImage(matSobelX.normalize()).save("/Users/Dat/Desktop/outputs/sobel_x.png");
+    sobel.exportImage(matSobelY.normalize()).save("/Users/Dat/Desktop/outputs/sobel_y.png");
 
-    sobel.exportImage(matSobelX.normalize()).save("/Users/Dat/Desktop/outputs/sobel_x.jpg");
-    sobel.exportImage(matSobelY.normalize()).save("/Users/Dat/Desktop/outputs/sobel_y.jpg");
+    Matrix x = Sobel::Builder(grayscaleMatrix).sobelX().build().getMatrix();
+    Matrix y = Sobel::Builder(grayscaleMatrix).sobelY().build().getMatrix();
 
-    Sobel::Builder builderSobelXY(grayscaleMatrix);
+    Matrix matSobelXY = Sobel::Builder(grayscaleMatrix).sobelXY(x,y).build().getMatrix();
+    sobel.exportImage(matSobelXY.normalize()).save("/Users/Dat/Desktop/outputs/sobel_xy.png");
 
-    Matrix x = builderSobelX.sobelX().build().getMatrix();
-    Matrix y = builderSobelY.sobelY().build().getMatrix();
-
-    Matrix matSobelXY = builderSobelXY.sobelXY(x,y).build().getMatrix();
-    sobel.exportImage(matSobelXY.normalize()).save("/Users/Dat/Desktop/outputs/sobel_xy.jpg");
-
-    Sobel::Builder builderSobel(grayscaleMatrix);
-
-    Matrix matSobel = builderSobel.sobelX().sobelY().build().getMatrix();
-
-    sobel.exportImage(matSobel.normalize()).save("/Users/Dat/Desktop/outputs/sobel.jpg");
 
     return 0;
 }

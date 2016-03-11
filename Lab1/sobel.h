@@ -23,18 +23,6 @@ public:
     QImage exportImage(Matrix& matrix);
     Matrix getMatrix();
 
-    void normalize(){
-        auto minmax = std::minmax_element(matrix.getIntensities().begin(), matrix.getIntensities().end());
-        auto min_intensity = *minmax.first;
-        auto max_intensity = *minmax.second;
-        std::transform(matrix.getIntensities().begin(), matrix.getIntensities().end(), matrix.getIntensities().begin(),
-        [=](const auto& intensity)
-        {
-            return (intensity - min_intensity) / double(max_intensity - min_intensity);
-
-        });
-    }
-
     class Builder
     {
     private:
@@ -107,16 +95,17 @@ public:
                 for(int j = 0; j < mat1.getWidth(); j++){
                     double result_intensity = 0;
                     for(int x = 0; x < mat2.getHeight(); x++){
-                        int index1 = mat2.getHeight() - 1 - x;
                         for(int y = 0; y < mat2.getWidth(); y++){
-                            int index2 = mat2.getWidth() - 1 - y;
-
-                            int ii = i + (x - centerX);
-                            int jj = j + (y - centerY);
-
+                            int ii = i + x - centerX;
+                            int jj = j + y - centerY;
                             if( ii >= 0 && ii < mat1.getHeight() && jj >= 0 && jj <  mat1.getWidth())
-                                result_intensity += mat2.getItensityAt(index1, index2) * mat1.getItensityAt(ii,jj);
-
+                                result_intensity += mat2.getItensityAt(x, y) * mat1.getItensityAt(ii,jj);
+                            //edge effect
+                            else{
+                                ii = getRow(ii,mat1.getHeight());
+                                jj = getCol(jj,mat1.getWidth());
+                                result_intensity += mat2.getItensityAt(x, y) * mat1.getItensityAt(ii,jj);
+                            }
                         }
                     }
                     result.setIntensity(i,j,result_intensity);
@@ -125,6 +114,32 @@ public:
 
             return result;
         }
+
+        int getRow(int row,int height){
+            int res_row;
+            if (row < 0) {
+                res_row = 0;
+            } else if (row >= height) {
+                res_row = height - 1;
+            } else {
+                res_row = row;
+            }
+            return res_row;
+        }
+
+        int getCol(int col,int width){
+            int res_col;
+            if (col < 0) {
+                res_col = 0;
+            } else if (col >= width) {
+                res_col = width - 1;
+            } else {
+                res_col = col;
+            }
+            return res_col;
+        }
+
+
 
         double getGradient(double x, double y){
             return sqrt(x * x + y * y);
