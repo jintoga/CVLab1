@@ -32,7 +32,7 @@ void Matrix::setIntensity(int row,int col,double val)
 }
 
 
-int Matrix::getIndex(int row,int col)
+int Matrix::getIndex(int row,int col) const
 {
     return row*width+col;
 }
@@ -45,7 +45,7 @@ int Matrix::getHeight(){
     return height;
 }
 
-double Matrix::getItensityAt(int row,int col){
+double Matrix::getItensityAt(int row,int col) const{
     return intensities[getIndex(row,col)];
 }
 

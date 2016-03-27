@@ -9,12 +9,12 @@ public:
     Matrix(QImage& qImage);
     Matrix(int height,int width,std::vector<double> intensities);
     void setIntensity(int row,int col,double intensity);
-    int getIndex(int row,int col);
+    int getIndex(int row,int col) const;
 
     int getWidth();
     int getHeight();
 
-    double getItensityAt(int row,int col);
+    double getItensityAt(int row,int col) const;
 
     std::vector<double> getIntensities();
 

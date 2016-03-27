@@ -7,7 +7,7 @@ Sobel::Sobel()
 
 }
 
-Matrix Sobel::getMatrix()
+Matrix &Sobel::getMatrix()
 {
     printf("matrixsize:%d\n",matrix.getIntensities().capacity());
     return matrix;
@@ -29,7 +29,7 @@ Matrix Sobel::getGrayScaleMatrix(QImage& qImage)
     return grayScaleMatrix;
 }
 
-QImage Sobel::exportImage(Matrix& matrix)
+QImage Sobel::exportImage(Matrix& matrix) const
 {
 
     QImage result(matrix.getWidth(),matrix.getHeight(),QImage::Format_RGB32);
@@ -43,11 +43,11 @@ QImage Sobel::exportImage(Matrix& matrix)
     return result;
 }
 
-double Sobel::intToDouble(int intensity) {
+double Sobel::intToDouble(int intensity) const{
     return double(intensity) / 255;
 }
 
-int Sobel::doubleToInt(double intensity) {
+int Sobel::doubleToInt(double intensity) const{
     return int(intensity*255);
 }
 

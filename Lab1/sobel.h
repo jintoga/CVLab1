@@ -3,7 +3,6 @@
 #include "matrix.h"
 #include <cmath>
 
-const int size = 3;
 
 
 class Sobel
@@ -18,14 +17,17 @@ public:
         :matrix(matrix)
     {};
     Matrix getGrayScaleMatrix(QImage& input);
-    double intToDouble(int intensity);
-    int doubleToInt(double intensity);
-    QImage exportImage(Matrix& matrix);
-    Matrix getMatrix();
+    double intToDouble(int intensity) const;
+    int doubleToInt(double intensity) const;
+    QImage exportImage(Matrix& matrix) const;
+    Matrix& getMatrix();
 
     class Builder
     {
     private:
+
+        const int size = 3;
+
         const std::vector<double> sobel_x_vector{
             -1, 0, 1,
             -2, 0, 2,
@@ -83,7 +85,7 @@ public:
             return Sobel(this->matrix);
         }
 
-        Matrix convolution(Matrix& mat1,Matrix& mat2)
+        static Matrix convolution(Matrix& mat1,Matrix& mat2)
         {
             Matrix result(mat1.getHeight(),mat1.getWidth());
 
@@ -115,7 +117,7 @@ public:
             return result;
         }
 
-        int getRow(int row,int height){
+        static int getRow(int row,int height){
             int res_row;
             if (row < 0) {
                 res_row = 0;
@@ -127,7 +129,7 @@ public:
             return res_row;
         }
 
-        int getCol(int col,int width){
+        static int getCol(int col,int width){
             int res_col;
             if (col < 0) {
                 res_col = 0;
