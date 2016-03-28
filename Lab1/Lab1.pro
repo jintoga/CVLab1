@@ -10,9 +10,11 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     matrix.cpp \
-    sobel.cpp
+    sobel.cpp \
+    gauss.cpp
 
 HEADERS += \
     matrix.h \
-    sobel.h
+    sobel.h \
+    gauss.h
 
