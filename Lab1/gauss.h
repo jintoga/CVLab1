@@ -2,6 +2,7 @@
 #include <QtGui>
 #include "matrix.h"
 #include <cmath>
+#include "array.h"
 
 
 class Gauss
@@ -53,20 +54,54 @@ public:
         Builder& gaussPyramid(Matrix& matrix){
             auto sigmaB = getSigmaB(this->sigma0, this->sigmaA);
             auto gauss = getGaussSeparable(sigmaB);
+
+            this->pyramid.emplace_back (this->sigma0, this->sigma0, separableFilter(matrix, gauss));
             return *this;
         }
 
-        static std::vector<std::pair<int, int>> getGaussSeparable(double sigmaB){
+        static std::pair<Array, Array> getGaussSeparable(double sigmaB){
             int kernelSize = int(std::ceil(3 * sigmaB)) * 2 + 1;
-            std::vector<std::pair<int, int>> separableFilter;
+            auto separableFilter = std::make_pair<Array, Array>(kernelSize, kernelSize);
 
-            int half = kernelSize / 2;
+            int center = kernelSize / 2;
 
             for (int i = 0; i < kernelSize; i++) {
-                separableFilter[i].first = separableFilter[i].second = sqrt(Gauss::gauss(i - half, i - half, sigmaB));
+                double val =  sqrt(Gauss::gauss(i - center, i - center, sigmaB));
+                separableFilter.first.setItem(i,val);
+                separableFilter.second.setItem(i,val);
             }
             return separableFilter;
 
+        }
+
+        static Matrix separableFilter(Matrix& matrix, std::pair<Array, Array> filter){
+             Matrix tempMat(matrix.getHeight(),matrix.getWidth());
+             int center = filter.first.getSize() / 2;
+             for (int i = 0; i < matrix.getHeight(); i++) {
+                 for (int j = 0; j < matrix.getWidth(); j++) {
+                     double result_intensity = 0;
+                     for (int y = 0; y < filter.first.getSize(); y++) {
+                         auto intensity = matrix.getItensityAt(i, j + y - center);
+                         result_intensity += intensity * filter.first.getItem(y);
+                     }
+                     tempMat.setIntensity(i, j, result_intensity);
+                 }
+             }
+
+             Matrix result(tempMat.getHeight(), tempMat.getWidth());
+
+             for (int i = 0; i < tempMat.getHeight(); i++) {
+                 for (int j = 0; j < tempMat.getWidth(); j++) {
+                     double result_intensity = 0;
+                     for (int x = 0; x < filter.second.getSize(); x++) {
+                         auto intensity = tempMat.getItensityAt(i + x - center, j);
+                         result_intensity += intensity * filter.second.getItem(x);
+                     }
+                     result.setIntensity(i, j, result_intensity);
+                 }
+             }
+
+             return result;
         }
 
         static double getSigmaB(double sigma0, double sigmaA) {
