@@ -20,6 +20,10 @@ public:
 
     Matrix& normalize();
 
+    static int getRow(int row,int height);
+
+    static int getCol(int col,int width);
+
 private:
     int height;
     int width;

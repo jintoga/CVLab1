@@ -5,10 +5,9 @@ Gauss::Gauss()
 
 }
 
-Matrix &Gauss::getMatrix()
+std::vector<std::tuple<double, double, Matrix>> Gauss::getPyramid()
 {
-    printf("gauss done:%d\n",matrix.getIntensities().capacity());
-    return matrix;
+    return pyramid;
 }
 
 Matrix Gauss::getGrayScaleMatrix(QImage& qImage)
@@ -29,7 +28,6 @@ Matrix Gauss::getGrayScaleMatrix(QImage& qImage)
 
 Matrix Gauss::getDownscale(Matrix& mat)
 {
-    printf("downscale\n");
     Matrix result(mat.getHeight()/2, mat.getWidth()/2);
 
     for(int i = 0; i < result.getHeight();i++){
@@ -38,6 +36,8 @@ Matrix Gauss::getDownscale(Matrix& mat)
             result.setIntensity(i, j, gradient);
         }
     }
+
+    printf("downscaled\n");
     return result;
 }
 

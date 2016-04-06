@@ -12,7 +12,7 @@ Matrix::Matrix(int height,int width)
     ,intensities(height * width)
 {
 
-   printf("size:%d\n",intensities.capacity());
+   //printf("size:%d\n",intensities.capacity());
 }
 
 Matrix::Matrix(QImage& qImage)
@@ -47,6 +47,30 @@ int Matrix::getHeight(){
 
 double Matrix::getItensityAt(int row,int col) const{
     return intensities[getIndex(row,col)];
+}
+
+int Matrix::getRow(int row,int height){
+    int res_row;
+    if (row < 0) {
+        res_row = 0;
+    } else if (row >= height) {
+        res_row = height - 1;
+    } else {
+        res_row = row;
+    }
+    return res_row;
+}
+
+int Matrix::getCol(int col,int width){
+    int res_col;
+    if (col < 0) {
+        res_col = 0;
+    } else if (col >= width) {
+        res_col = width - 1;
+    } else {
+        res_col = col;
+    }
+    return res_col;
 }
 
 std::vector<double> Matrix::getIntensities(){
