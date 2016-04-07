@@ -14,7 +14,9 @@ int main(int argc, char *argv[])
     Gauss gauss;
     Matrix grayscaleMatrix = gauss.getGrayScaleMatrix(qImage);
     gauss.exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/myoutputs/gauss_grayscale.png");
-    Matrix downscaled = Gauss::getDownscale(grayscaleMatrix);
+    Matrix downscaled = Gauss::getDownscaled(grayscaleMatrix);
+    //Matrix upscaled = Gauss::getUpscaled(grayscaleMatrix);
+
     Gauss result = Gauss::Builder(grayscaleMatrix).init().gaussPyramid(downscaled).build();
 
     int count = 0;

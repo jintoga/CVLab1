@@ -11,8 +11,6 @@ Matrix::Matrix(int height,int width)
     ,width(width)
     ,intensities(height * width)
 {
-
-   //printf("size:%d\n",intensities.capacity());
 }
 
 Matrix::Matrix(QImage& qImage)
@@ -89,5 +87,3 @@ Matrix& Matrix::normalize(){
     });
     return *this;
 }
-
-

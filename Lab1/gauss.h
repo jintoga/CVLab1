@@ -4,27 +4,30 @@
 #include <cmath>
 #include "array.h"
 
+using Layers = std::tuple<double, double, Matrix>;
+using Pyramid = std::vector<std::tuple<double, double, Matrix>>;
+using Filter = std::pair<Array, Array>;
 class Gauss
 {
 private:
     Matrix matrix;
-
-    std::tuple<double, double, Matrix> pyramidLayers;
-    std::vector<std::tuple<double, double, Matrix>> pyramid;
+    Layers pyramidLayers;
+    Pyramid pyramid;
 public:
     Gauss();
     Gauss(Matrix& matrix)
         :matrix(matrix)
-    {};
-    Gauss(std::vector<std::tuple<double, double, Matrix>>& pyramid)
+    {}
+    Gauss(Pyramid& pyramid)
         :pyramid(pyramid)
-    {};
-    Matrix getGrayScaleMatrix(QImage& input);
+    {}
+    Matrix getGrayScaleMatrix(QImage& input) const;
     double intToDouble(int intensity) const;
     int doubleToInt(double intensity) const;
     QImage exportImage(Matrix& matrix) const;
-    std::vector<std::tuple<double, double, Matrix>> getPyramid();
-    static Matrix getDownscale(Matrix& mat);
+    Pyramid getPyramid() const;
+    static Matrix getDownscaled(Matrix& mat);
+    static Matrix getUpscaled(Matrix& mat);
     static double gauss(int x, int y, double sigma);
 
     class Builder
@@ -35,9 +38,9 @@ public:
         double sigmaA = 0.5;
         double sigma0 = 1.6;
         int n;
-        const int min_size = 64;
+        const int minSize = 64;
 
-        std::vector<std::tuple<double, double, Matrix>> pyramid;
+        Pyramid pyramid;
     public:
         Builder(Matrix& matrix)
             :matrix(matrix)
@@ -46,9 +49,9 @@ public:
         Builder& init()
         {
             printf("init\n");
-            this->n = int(std::min(std::log2(double(matrix.getHeight()) / min_size),
-                              std::log2(double(matrix.getWidth()) / min_size))) + 1;
-            this->n = this->n + 1;
+            this->n = int(std::min(std::log2(double(matrix.getHeight()) / minSize),
+                              std::log2(double(matrix.getWidth()) / minSize)));
+            this->n++;
             printf("const: s = %d, sigmaA = %lf, sigma0 = %lf, n = %d\n", this->s, this->sigmaA, this->sigma0, n);
             return *this;
         }
@@ -59,9 +62,9 @@ public:
 
             this->pyramid.emplace_back (this->sigma0, this->sigma0, separableFilter(matrix, gauss));
 
-            auto k = pow(2.0, 1.0 / this->s);
+            auto k = pow(2.0, 1.0/this->s);
 
-            std::vector<std::pair<Array, Array>> filters;
+            std::vector<Filter> filters;
             auto oldSigma = this->sigma0;
             for (int i = 0; i < this->s; i++) {
                 auto newSigma = oldSigma * k;
@@ -72,7 +75,7 @@ public:
 
             for (int oct = 0; oct < this->n; oct++) {
                  for (int i = 0; i < this->s; i++) {
-                    std::tuple<double, double, Matrix>& layer = this->pyramid.back();
+                    Layers& layer = this->pyramid.back();
                     double s0 = std::get<0>(layer);
                     double s1 = std::get<1>(layer);
 
@@ -83,17 +86,17 @@ public:
 
                  if (oct != this->n - 1) {
 
-                     std::tuple<double, double, Matrix>& layer = this->pyramid.back();
+                     Layers& layer = this->pyramid.back();
                      auto s = std::get<1>(layer);
                      Matrix& image = std::get<2>(layer);
 
-                     this->pyramid.emplace_back(this->sigma0, s, getDownscale(image));
+                     this->pyramid.emplace_back(this->sigma0, s, getDownscaled(image));
                  }
             }
             return *this;
         }
 
-        static std::pair<Array, Array> getGaussSeparable(double sigmaB){
+        static Filter getGaussSeparable(const double sigmaB){
             int kernelSize = int(std::ceil(3 * sigmaB)) * 2 + 1;
             auto separableFilter = std::make_pair<Array, Array>(kernelSize, kernelSize);
 
@@ -108,7 +111,7 @@ public:
 
         }
 
-        static Matrix separableFilter(Matrix& matrix,const std::pair<Array, Array> filter){
+        static Matrix separableFilter(Matrix& matrix, const Filter& filter){
              Matrix tempMat(matrix.getHeight(),matrix.getWidth());
              int center = filter.first.getSize() / 2;
              for (int i = 0; i < matrix.getHeight(); i++) {

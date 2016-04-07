@@ -13,7 +13,7 @@ Matrix &Sobel::getMatrix()
     return matrix;
 }
 
-Matrix Sobel::getGrayScaleMatrix(QImage& qImage)
+Matrix Sobel::getGrayScaleMatrix(QImage& qImage) const
 {
     Matrix grayScaleMatrix(qImage);
     for (int i = 0; i < grayScaleMatrix.getHeight(); i++) {
