@@ -15,8 +15,8 @@ public:
     Sobel();
     Sobel(Matrix& matrix)
         :matrix(matrix)
-    {};
-    Matrix getGrayScaleMatrix(QImage& input);
+    {}
+    Matrix getGrayScaleMatrix(QImage& input) const;
     double intToDouble(int intensity) const;
     int doubleToInt(double intensity) const;
     QImage exportImage(Matrix& matrix) const;
@@ -104,8 +104,8 @@ public:
                                 result_intensity += mat2.getItensityAt(x, y) * mat1.getItensityAt(ii,jj);
                             //edge effect
                             else{
-                                ii = getRow(ii,mat1.getHeight());
-                                jj = getCol(jj,mat1.getWidth());
+                                ii = Matrix::getRow(ii,mat1.getHeight());
+                                jj = Matrix::getCol(jj,mat1.getWidth());
                                 result_intensity += mat2.getItensityAt(x, y) * mat1.getItensityAt(ii,jj);
                             }
                         }
@@ -116,32 +116,6 @@ public:
 
             return result;
         }
-
-        static int getRow(int row,int height){
-            int res_row;
-            if (row < 0) {
-                res_row = 0;
-            } else if (row >= height) {
-                res_row = height - 1;
-            } else {
-                res_row = row;
-            }
-            return res_row;
-        }
-
-        static int getCol(int col,int width){
-            int res_col;
-            if (col < 0) {
-                res_col = 0;
-            } else if (col >= width) {
-                res_col = width - 1;
-            } else {
-                res_col = col;
-            }
-            return res_col;
-        }
-
-
 
         double getGradient(double x, double y){
             return sqrt(x * x + y * y);
