@@ -16,10 +16,6 @@ public:
     Sobel(Matrix& matrix)
         :matrix(matrix)
     {}
-    Matrix getGrayScaleMatrix(QImage& input) const;
-    double intToDouble(int intensity) const;
-    int doubleToInt(double intensity) const;
-    QImage exportImage(Matrix& matrix) const;
     Matrix& getMatrix();
 
     class Builder

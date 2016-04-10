@@ -8,16 +8,15 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QImage qImage("/Users/Dat/Desktop/input.jpg");
+    QImage qImage("/Users/Dat/Desktop/aaa.jpg");
 
 
-    Gauss gauss;
-    Matrix grayscaleMatrix = gauss.getGrayScaleMatrix(qImage);
-    gauss.exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/myoutputs/gauss_grayscale.png");
-    Matrix downscaled = Gauss::getDownscaled(grayscaleMatrix);
+    Matrix grayscaleMatrix = Matrix::getGrayScaleMatrix(qImage);
+    Matrix::exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/myoutputs/gauss_grayscale.png");
+    //Matrix downscaled = Gauss::getDownscaled(grayscaleMatrix);
     //Matrix upscaled = Gauss::getUpscaled(grayscaleMatrix);
 
-    Gauss result = Gauss::Builder(grayscaleMatrix).init().gaussPyramid(downscaled).build();
+    Gauss result = Gauss::Builder(grayscaleMatrix).init().gaussPyramid(grayscaleMatrix).build();
 
     int count = 0;
     for (const auto& layer : result.getPyramid()) {
@@ -28,7 +27,7 @@ int main(int argc, char *argv[])
         std::string name = "/Users/Dat/Desktop/myoutputs/img_" +
                 std::to_string(count++)  +  ".png";
 
-        result.exportImage(img).save(name.c_str());
+        Matrix::exportImage(img).save(name.c_str());
         printf("exported %s\n",name.c_str());
     }
 
