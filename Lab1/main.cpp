@@ -13,8 +13,6 @@ int main(int argc, char *argv[])
 
     Matrix grayscaleMatrix = Matrix::getGrayScaleMatrix(qImage);
     Matrix::exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/myoutputs/gauss_grayscale.png");
-    //Matrix downscaled = Gauss::getDownscaled(grayscaleMatrix);
-    //Matrix upscaled = Gauss::getUpscaled(grayscaleMatrix);
 
     Gauss result = Gauss::Builder(grayscaleMatrix).init().gaussPyramid(grayscaleMatrix).build();
 

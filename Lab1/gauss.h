@@ -11,7 +11,6 @@ class Gauss
 {
 private:
     Matrix matrix;
-//    Layers pyramidLayers;
     Pyramid pyramid;
 public:
     Gauss();
