@@ -3,32 +3,24 @@
 #include "sobel.h"
 #include "gauss.h"
 #include "matrix.h"
+#include "pointsofinterest.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QImage qImage("/Users/Dat/Desktop/aaa.jpg");
+    QImage qImage("/Users/Dat/Desktop/lena_std.tif");
 
 
     Matrix grayscaleMatrix = Matrix::getGrayScaleMatrix(qImage);
-    Matrix::exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/myoutputs/gauss_grayscale.png");
+    Matrix::exportImage(grayscaleMatrix).save("/Users/Dat/Desktop/myoutputs/grayscale.png");
 
-    Gauss result = Gauss::Builder(grayscaleMatrix).init().gaussPyramid(grayscaleMatrix).build();
-
-    int count = 0;
-    for (const auto& layer : result.getPyramid()) {
-
-
-        Matrix img = std::get<2>(layer);
-
-        std::string name = "/Users/Dat/Desktop/myoutputs/img_" +
-                std::to_string(count++)  +  ".png";
-
-        Matrix::exportImage(img).save(name.c_str());
-        printf("exported %s\n",name.c_str());
-    }
-
+    PointsOfInterest moravec = PointsOfInterest::Builder(grayscaleMatrix).init().moravec().build();
+    printf("points of interest: %d\n", moravec.getPoIs().size());
+    printf("points of interest filtered: %d\n\n", moravec.getFilteredPoIs().size());
+    Matrix::exportImage(moravec.getMatrix()).save("/Users/Dat/Desktop/myoutputs/moravec.png");
+    moravec.markPoints(grayscaleMatrix, moravec.getPoIs()).save("/Users/Dat/Desktop/myoutputs/moravec_pois.png");
+    moravec.markPoints(grayscaleMatrix, moravec.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/moravec_filtered_pois.png");
     return 0;
 }
 

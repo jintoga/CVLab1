@@ -1,6 +1,13 @@
 #pragma once
 #include <QtGui>
 
+enum class BorderEffect {
+    None,
+    Wrap,
+    Clamp,
+    Mirror
+};
+
 class Matrix
 {
 public:
@@ -33,5 +40,9 @@ private:
     int height;
     int width;
     std::vector<double> intensities;
+    BorderEffect borderEffect = BorderEffect::Mirror;
 
+    std::pair<int, int> getClampIndices(int row, int col) const;
+    std::pair<int, int> getMirrorIndices(int row, int col) const;
+    std::pair<int, int> getWrapIndices(int row, int col) const;
 };

@@ -2,21 +2,17 @@
 #include <cassert>
 
 Matrix::Matrix()
-{
-
-}
+{}
 
 Matrix::Matrix(int height,int width)
     :height(height)
     ,width(width)
     ,intensities(height * width)
-{
-}
+{}
 
 Matrix::Matrix(const QImage& qImage)
     :Matrix(qImage.height(),qImage.width())
-{
-}
+{}
 
 Matrix::Matrix(int height,int width,std::vector<double> intensities)
     :Matrix(height,width)
@@ -43,8 +39,91 @@ int Matrix::getHeight() const{
     return height;
 }
 
+std::pair<int, int> Matrix::getClampIndices(int row, int col) const {
+    int resRow;
+    int resCol;
+
+    if (row < 0) {
+        resRow = 0;
+    } else if (row >= getHeight()) {
+        resRow = getHeight() - 1;
+    } else {
+        resRow = row;
+    }
+
+    if (col < 0) {
+        resCol = 0;
+    } else if (col >= getWidth()) {
+        resCol = getWidth() - 1;
+    } else {
+        resCol = col;
+    }
+
+    return std::make_pair(resRow, resCol);
+}
+
+std::pair<int, int> Matrix::getMirrorIndices(int row, int col) const {
+    int resRow;
+    int resCol;
+
+    if (row < 0) {
+        resRow = -row - 1;
+    } else if (row >= getHeight()) {
+        resRow = 2 * getHeight() - row - 1;
+    } else {
+        resRow = row;
+    }
+
+    if (col < 0) {
+        resCol = -col - 1;
+    } else if (col >= getWidth()) {
+        resCol = 2 * getWidth() - col - 1;
+    } else {
+        resCol = col;
+    }
+
+    return std::make_pair(resRow, resCol);
+}
+
+std::pair<int, int> Matrix::getWrapIndices(int row, int col) const {
+    int resRow;
+    int resCol;
+
+    if (row < 0) {
+        resRow = getHeight() + row;
+    } else if (row >= getHeight()) {
+        resRow = row - getHeight();
+    } else {
+        resRow = row;
+    }
+
+    if (col < 0) {
+        resCol = getWidth() + col;
+    } else if (col >= getWidth()) {
+        resCol = col - getWidth();
+    } else {
+        resCol = col;
+    }
+
+    return std::make_pair(resRow, resCol);
+}
+
 double Matrix::getItensityAt(int row,int col) const{
-    return intensities[getIndex(row,col)];
+    if(row >= 0 && row < int(height) && col >= 0 && col < int(width)){
+        return intensities[getIndex(row,col)];
+    }
+    if (borderEffect == BorderEffect::Clamp) {
+        auto indices = getClampIndices(row, col);
+        return intensities[getIndex(indices.first,indices.second)];
+    } else if (borderEffect == BorderEffect::Mirror) {
+        auto indices = getMirrorIndices(row, col);
+        return intensities[getIndex(indices.first,indices.second)];
+    } else if (borderEffect == BorderEffect::Wrap) {
+        auto indices = getWrapIndices(row, col);
+        return intensities[getIndex(indices.first,indices.second)];
+    }
+    return 0;
+
 }
 
 int Matrix::getRow(int row,int height){
