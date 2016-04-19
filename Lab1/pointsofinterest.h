@@ -2,6 +2,7 @@
 #include <QtGui>
 #include "matrix.h"
 #include <cmath>
+#include "sobel.h"
 
 using Point = std::tuple<int, int, double>;
 using Points = std::vector<Point>;
@@ -41,7 +42,9 @@ public:
         Builder(const Matrix& matrix);
         Builder& init();
         Builder& moravec();
+        Builder& harris();
         static Matrix opMoravec(const Matrix& matrix, const int w);
+        static Matrix opHarris(const Matrix& matrix, const int w);
 
         static Points findPoI(const Matrix& matrix, const double threshold, const int p);
         static Points filterPoI(const Points& points, const unsigned targetQuantity);

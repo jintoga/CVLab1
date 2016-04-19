@@ -105,6 +105,62 @@ Matrix PointsOfInterest::Builder::opMoravec(const Matrix& matrix, int w) {
     return result;
 }
 
+PointsOfInterest::Builder& PointsOfInterest::Builder::harris()
+{
+    printf("Harris\n");
+
+    this->matrix = opHarris(this->matrix, this->w);
+    this->pois = findPoI(this->matrix, this->threshold, this->p);
+    this->filteredPoIs = filterPoI(this->pois, this->quantity);
+
+
+    return *this;
+}
+
+Matrix PointsOfInterest::Builder::opHarris(const Matrix& matrix, int w) {
+
+    double k = 0.06;
+
+    Matrix sobelX = Sobel::Builder(matrix).sobelX().build().getMatrix();
+    Matrix sobelY = Sobel::Builder(matrix).sobelY().build().getMatrix();
+
+    Matrix a(matrix.getHeight(),matrix.getWidth());
+    Matrix b(matrix.getHeight(),matrix.getWidth());
+    Matrix c(matrix.getHeight(),matrix.getWidth());
+
+    auto center = w / 2;
+
+    for (int i = 0; i < matrix.getHeight(); i++) {
+        for (int j = 0; j < matrix.getWidth(); j++) {
+            double sumA = 0, sumB = 0, sumC = 0;
+            for (int x = -center; x <= center; x++) {
+                for (int y = -center; y <= center; y++) {
+                    auto ii = sobelX.getItensityAt(i + x, j + y);
+                    auto jj = sobelY.getItensityAt(i + x, j + y);
+                    sumA += ii * ii;
+                    sumB += ii * jj;
+                    sumC += jj * jj;
+                }
+            }
+            a.setIntensity(i, j, sumA);
+            b.setIntensity(i, j, sumB);
+            c.setIntensity(i, j, sumC);
+        }
+    }
+
+    Matrix result(matrix.getHeight(),matrix.getWidth());
+
+    for (int i = 0; i < matrix.getHeight(); i++) {
+        for (int j = 0; j < matrix.getWidth(); j++) {
+            auto harris = a.getItensityAt(i, j) * c.getItensityAt(i, j) - b.getItensityAt(i, j)*b.getItensityAt(i, j) -
+                    k * (a.getItensityAt(i, j) + c.getItensityAt(i, j))*(a.getItensityAt(i, j) + c.getItensityAt(i, j));
+            result.setIntensity(i, j, harris);
+        }
+    }
+
+    return result;
+}
+
 Points PointsOfInterest::Builder::findPoI(const Matrix& matrix, const double threshold, const int p) {
 
     auto center = p / 2;

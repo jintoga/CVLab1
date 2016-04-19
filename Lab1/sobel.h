@@ -35,7 +35,7 @@ public:
              1,  2,  1
         };
     public:
-        Builder(Matrix& matrix)
+        Builder(const Matrix& matrix)
             :matrix(matrix)
         {}
         Builder& sobelX()
@@ -77,11 +77,10 @@ public:
 
         Sobel build()
         {
-            printf("building\n");
             return Sobel(this->matrix);
         }
 
-        static Matrix convolution(Matrix& mat1,Matrix& mat2)
+        static Matrix convolution(const Matrix& mat1, const Matrix& mat2)
         {
             Matrix result(mat1.getHeight(),mat1.getWidth());
 
