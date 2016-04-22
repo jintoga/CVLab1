@@ -41,7 +41,7 @@ PointsOfInterest::Builder::Builder(const Matrix& matrix)
     :matrix(matrix)
 {}
 
-double PointsOfInterest::Builder::getC(const Matrix& matrix, int w, int x, int y, int dx, int dy) {
+double PointsOfInterest::Builder::getContrast(const Matrix& matrix, const int w, const int x, const int y, const int dx, const int dy) {
 
     double sum = 0;
     auto center = w / 2;
@@ -63,10 +63,9 @@ double PointsOfInterest::Builder::getDistance(int x1, int y1, int x2, int y2) {
 PointsOfInterest::Builder& PointsOfInterest::Builder::init()
 {
     printf("init\n");
-    printf("const: w = %d, threshold = %lf, p = %d, quantity = %d\n",
+    printf("const: w = %d, threshold = %lf, quantity = %d\n",
            this->w,
            this->threshold,
-           this->p,
            this->quantity);
     return *this;
 }
@@ -76,7 +75,7 @@ PointsOfInterest::Builder& PointsOfInterest::Builder::moravec()
     printf("Moravec\n");
 
     this->matrix = opMoravec(this->matrix, this->w);
-    this->pois = findPoI(this->matrix, this->threshold, this->p);
+    this->pois = findPoI(this->matrix, this->threshold);
     this->filteredPoIs = filterPoI(this->pois, this->quantity);
 
 
@@ -89,12 +88,13 @@ Matrix PointsOfInterest::Builder::opMoravec(const Matrix& matrix, int w) {
 
     for (int i = 0; i < matrix.getHeight(); i++) {
         for (int j = 0; j < matrix.getWidth(); j++) {
-            auto s = std::numeric_limits<double>::max();
+            auto s = 99999999.0;        //value of operator
+            //shift vector
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dy = -1; dy <= 1; dy++) {
                     if (dx != 0 && dy != 0) {
-                        auto c = getC(matrix, w, i, j, dx, dy);
-                        s = std::min(s, c);
+                        auto c = getContrast(matrix, w, i, j, dx, dy);     //contrast value of at point(i,j) in shift vector(dx, dy)
+                        s = std::min(s, c);     //S(x,y) = min Contrast(x,y,d)
                     }
                 }
             }
@@ -110,7 +110,7 @@ PointsOfInterest::Builder& PointsOfInterest::Builder::harris()
     printf("Harris\n");
 
     this->matrix = opHarris(this->matrix, this->w);
-    this->pois = findPoI(this->matrix, this->threshold, this->p);
+    this->pois = findPoI(this->matrix, this->threshold);
     this->filteredPoIs = filterPoI(this->pois, this->quantity);
 
 
@@ -161,17 +161,16 @@ Matrix PointsOfInterest::Builder::opHarris(const Matrix& matrix, int w) {
     return result;
 }
 
-Points PointsOfInterest::Builder::findPoI(const Matrix& matrix, const double threshold, const int p) {
-
-    auto center = p / 2;
+Points PointsOfInterest::Builder::findPoI(const Matrix& matrix, const double threshold) {
 
     Points points;
 
     for (int i = 0; i < matrix.getHeight(); i++) {
         for (int j = 0; j < matrix.getWidth(); j++) {
             bool isPoI = true;
-            for (int px = -center; px <= center && isPoI; px++) {
-                for (int py = -center; py <= center && isPoI; py++) {
+            //run around neighbours
+            for (int px = -1; px <= 1 && isPoI; px++) {
+                for (int py = -1; py <= 1 && isPoI; py++) {
                     if (px != 0 || py != 0) {
                         isPoI = matrix.getItensityAt(i, j) > matrix.getItensityAt(i + px, j + py);
                     }
@@ -194,19 +193,19 @@ Points PointsOfInterest::Builder::filterPoI(const Points& points, const unsigned
 
     while (filteredPoI.size() > quantity) {
         filteredPoI.erase(std::remove_if(filteredPoI.begin(), filteredPoI.end(),
-            [&](const auto& _point) {
-                for (const auto& point : filteredPoI) {
-                    auto distance = getDistance(std::get<0>(_point),
-                                                std::get<1>(_point),
-                                                std::get<0>(point),
-                                                std::get<1>(point));
-                    if (distance < r &&
-                            std::get<2>(_point) < std::get<2>(point)) {
-                        return true;
-                    }
+                                         [&](const auto& _point) {
+            for (const auto& point : filteredPoI) {
+                auto distance = getDistance(std::get<0>(_point),
+                                            std::get<1>(_point),
+                                            std::get<0>(point),
+                                            std::get<1>(point));
+                if (distance < r &&
+                        std::get<2>(_point) < std::get<2>(point)) {
+                    return true;
                 }
-                return false;
-            }), filteredPoI.end());
+            }
+            return false;
+        }), filteredPoI.end());
         r++;
     }
 

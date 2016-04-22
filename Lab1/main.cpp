@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QImage qImage("/Users/Dat/Desktop/lena_std.tif");
+    QImage qImage("/Users/Dat/Desktop/lena.jpg");
 
 
     Matrix grayscaleMatrix = Matrix::getGrayScaleMatrix(qImage);
