@@ -137,9 +137,9 @@ Matrix PointsOfInterest::Builder::opHarris(const Matrix& matrix, int w) {
                 for (int y = -center; y <= center; y++) {
                     auto ii = sobelX.getItensityAt(i + x, j + y);
                     auto jj = sobelY.getItensityAt(i + x, j + y);
-                    sumA += ii * ii;
-                    sumB += ii * jj;
-                    sumC += jj * jj;
+                    sumA += ii * ii; //A = Ix*Ix
+                    sumB += ii * jj; //B = Ix*Iy
+                    sumC += jj * jj; //C = Iy*Iy
                 }
             }
             a.setIntensity(i, j, sumA);
@@ -149,11 +149,12 @@ Matrix PointsOfInterest::Builder::opHarris(const Matrix& matrix, int w) {
     }
 
     Matrix result(matrix.getHeight(),matrix.getWidth());
-
+    // f = det(h) - k*trace(H)2
     for (int i = 0; i < matrix.getHeight(); i++) {
         for (int j = 0; j < matrix.getWidth(); j++) {
-            auto harris = a.getItensityAt(i, j) * c.getItensityAt(i, j) - b.getItensityAt(i, j)*b.getItensityAt(i, j) -
-                    k * (a.getItensityAt(i, j) + c.getItensityAt(i, j))*(a.getItensityAt(i, j) + c.getItensityAt(i, j));
+            auto detH = a.getItensityAt(i, j) * c.getItensityAt(i, j) - b.getItensityAt(i, j)*b.getItensityAt(i, j);
+            auto traceH = a.getItensityAt(i, j) + c.getItensityAt(i, j);
+            auto harris = detH - k * traceH * traceH;
             result.setIntensity(i, j, harris);
         }
     }
@@ -189,7 +190,7 @@ Points PointsOfInterest::Builder::filterPoI(const Points& points, const unsigned
 
     Points filteredPoI(points);
 
-    int r = 1;
+    int r = 0;
 
     while (filteredPoI.size() > quantity) {
         filteredPoI.erase(std::remove_if(filteredPoI.begin(), filteredPoI.end(),
@@ -199,8 +200,7 @@ Points PointsOfInterest::Builder::filterPoI(const Points& points, const unsigned
                                             std::get<1>(_point),
                                             std::get<0>(point),
                                             std::get<1>(point));
-                if (distance < r &&
-                        std::get<2>(_point) < std::get<2>(point)) {
+                if (distance < r && std::get<2>(_point) < std::get<2>(point)) {
                     return true;
                 }
             }
