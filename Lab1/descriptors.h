@@ -1,8 +1,9 @@
 #pragma once
 #include <QtGui>
-#include "matrix.h"
 #include <cmath>
 #include "matrix.h"
+#include "sobel.h"
+#include "gauss.h"
 #include "pointsofinterest.h"
 
 using Desciptor = std::vector<double>;
@@ -13,6 +14,9 @@ public:
     Descriptors();
     class Builder
     {
+    private:
+        Matrix matrix;
+        Points filteredPoIs;
     public:
         Builder();
         Builder(const Matrix& matrix, const Points& filteredPoIs);
