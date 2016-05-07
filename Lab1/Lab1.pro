@@ -12,11 +12,13 @@ SOURCES += main.cpp \
     matrix.cpp \
     sobel.cpp \
     gauss.cpp \
-    pointsofinterest.cpp
+    pointsofinterest.cpp \
+    descriptors.cpp
 
 HEADERS += \
     matrix.h \
     sobel.h \
     gauss.h \
-    pointsofinterest.h
+    pointsofinterest.h \
+    descriptors.h
 
