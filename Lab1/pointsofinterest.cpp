@@ -168,18 +168,21 @@ Points PointsOfInterest::Builder::findPoI(const Matrix& matrix, const double thr
 
     for (int i = 0; i < matrix.getHeight(); i++) {
         for (int j = 0; j < matrix.getWidth(); j++) {
-            bool isPoI = true;
-            //run around neighbours
-            for (int px = -1; px <= 1 && isPoI; px++) {
-                for (int py = -1; py <= 1 && isPoI; py++) {
-                    if (px != 0 || py != 0) {
-                        isPoI = matrix.getItensityAt(i, j) > matrix.getItensityAt(i + px, j + py);
+            if(matrix.getItensityAt(i, j) > threshold){
+                bool isPoI = true;
+                //run around neighbours
+                for (int px = -1; px <= 1 && isPoI; px++) {
+                    for (int py = -1; py <= 1 && isPoI; py++) {
+                        if (px != 0 || py != 0) {
+                            isPoI = matrix.getItensityAt(i, j) > matrix.getItensityAt(i + px, j + py);
+                        }
                     }
                 }
+                if (isPoI) {
+                    points.emplace_back(i, j, matrix.getItensityAt(i, j));
+                }
             }
-            if (isPoI && matrix.getItensityAt(i, j) > threshold) {
-                points.emplace_back(i, j, matrix.getItensityAt(i, j));
-            }
+
         }
     }
 
