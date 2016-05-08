@@ -49,6 +49,7 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
 
                 int bin1 = gOrientiation / binSize;
                 double bin1Center = bin1 * binSize - binSize / 2;
+                
             }
         }
 

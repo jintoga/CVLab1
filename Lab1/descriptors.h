@@ -25,6 +25,8 @@ public:
         Matrix matrix;
         Points filteredPoIs;
         ListOfDesciptors listOfDesciptors;
+        const int numberOfBins = 8 * 4 * 4;
+        const int gridCenter = 8;
     public:
         Builder();
         Builder(const Matrix& matrix, const Points& filteredPoIs);

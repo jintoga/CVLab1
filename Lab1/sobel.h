@@ -35,6 +35,8 @@ public:
              1,  2,  1
         };
     public:
+        Builder()
+        {}
         Builder(const Matrix& matrix)
             :matrix(matrix)
         {}
@@ -75,7 +77,7 @@ public:
             return *this;
         }
 
-        Builder& gradientDirections(const Matrix& mat1, const Matrix& mat2)
+        Builder& gradientOrientiations(const Matrix& mat1, const Matrix& mat2)
         {
             printf("gradientDirections\n");
             Matrix result(mat1.getHeight(),mat1.getWidth());
