@@ -58,7 +58,7 @@ public:
             return *this;
         }
 
-        Builder& sobelXY(Matrix& mat1,Matrix& mat2)
+        Builder& sobelXY(const Matrix& mat1, const Matrix& mat2)
         {
             printf("sobelXY\n");
             Matrix result(mat1.getHeight(),mat1.getWidth());
@@ -66,6 +66,23 @@ public:
             for(int i = 0; i < result.getHeight();i++){
                 for(int j = 0;j < result.getWidth();j++){
                     auto gradient = getGradient(mat1.getItensityAt(i, j), mat2.getItensityAt(i, j));
+                    result.setIntensity(i, j, gradient);
+                }
+            }
+
+            this->matrix = result;
+
+            return *this;
+        }
+
+        Builder& gradientDirections(const Matrix& mat1, const Matrix& mat2)
+        {
+            printf("gradientDirections\n");
+            Matrix result(mat1.getHeight(),mat1.getWidth());
+
+            for(int i = 0; i < result.getHeight();i++){
+                for(int j = 0;j < result.getWidth();j++){
+                    auto gradient = getGradientDirection(mat1.getItensityAt(i, j), mat2.getItensityAt(i, j));
                     result.setIntensity(i, j, gradient);
                 }
             }
@@ -114,6 +131,11 @@ public:
 
         double getGradient(double x, double y){
             return sqrt(x * x + y * y);
+        }
+
+        double getGradientDirection(double x, double y){
+            double res = atan2(y, x);
+            return res >= 0 ? res : res + 3.14 * 2;
         }
 
     private:
