@@ -36,26 +36,29 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
     Matrix gradientValues = Sobel::Builder().sobelXY(sobelX, sobelY).build().getMatrix();
     Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
 
-    const int binSize = 360 / this->gridCenter;
+    const double binSize = 360 / this->numberOfBinsPerHistogram;
 
     for (const auto& point : this->filteredPoIs) {
         Desciptor descriptor(this->numberOfBins);
-        //descriptor.reserve(this->numberOfBins);
+        int x = std::get<0>(point) - (this->histogramSize / 2) * this->histogramSize;
+        int y = std::get<1>(point) - (this->histogramSize / 2) * this->histogramSize;
+
         //building descriptor's histograms
         for(int i = 0; i < 16; i++){
             for(int j = 0; j < 16; j++){
 
-                int x = std::get<0>(point) - this->gridCenter + i;
-                int y = std::get<1>(point) - this->gridCenter + j;
 
-                double gValue = gradientValues.getItensityAt(x, y);
-                double gOrientation = gradientOrientations.getItensityAt(x, y);
+                double gValue = gradientValues.getItensityAt(x + i, y + i);
+                double gOrientation = gradientOrientations.getItensityAt(x + i, y + i);
 
                 //indexing bins
                 int bin1Index = gOrientation / binSize;
                 double bin1Center = bin1Index * binSize + binSize / 2;
 
-                int bin2Index = gOrientation >= bin1Center ? bin1Index + 1 : bin1Index - 1;
+                //int bin2Index = gOrientation >= bin1Center ? bin1Index + 1 : bin1Index - 1;
+                int bin2Index = bin1Index + 1;
+                if(gOrientation < bin1Center)
+                    bin2Index  = bin1Index - 1;
                 //check for histogram's edges
                 bin2Index = (bin2Index + this->numberOfBinsPerHistogram) % this->numberOfBinsPerHistogram;
 

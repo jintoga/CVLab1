@@ -30,7 +30,7 @@ public:
         const int gridCenter = 8;
         const int numberOfBinsPerHistogram = 8;
         const int histogramSize = 4;
-        const int numberOfBins = 8 * histogramSize * histogramSize;
+        const int numberOfBins = numberOfBinsPerHistogram * histogramSize * histogramSize;
     public:
         Builder();
         Builder(const Matrix& matrix, const Points& filteredPoIs);
