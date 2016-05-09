@@ -32,8 +32,8 @@ public:
     private:
         Matrix matrix;
         int w = 3; //window size
-        double threshold = 0.17;
-        int quantity = 100;
+        double threshold = 1;
+        int quantity = 50;
         Points pois;
         Points filteredPoIs;
     public:
