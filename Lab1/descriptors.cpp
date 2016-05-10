@@ -36,20 +36,20 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
     Matrix gradientValues = Sobel::Builder().sobelXY(sobelX, sobelY).build().getMatrix();
     Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
 
-    const double binSize = 360 / this->numberOfBinsPerHistogram;
+    const double binSize = 3.14*2 / this->numberOfBinsPerHistogram;
 
     for (const auto& point : this->filteredPoIs) {
         Desciptor descriptor(this->numberOfBins);
-        int x = std::get<0>(point) - (this->histogramSize / 2) * this->histogramSize;
-        int y = std::get<1>(point) - (this->histogramSize / 2) * this->histogramSize;
+        int x = std::get<0>(point) - this->gridCenter;
+        int y = std::get<1>(point) - this->gridCenter;
 
         //building descriptor's histograms
         for(int i = 0; i < 16; i++){
             for(int j = 0; j < 16; j++){
 
 
-                double gValue = gradientValues.getItensityAt(x + i, y + i);
-                double gOrientation = gradientOrientations.getItensityAt(x + i, y + i);
+                double gValue = gradientValues.getItensityAt(x + i, y + j);
+                double gOrientation = gradientOrientations.getItensityAt(x + i, y + j);
 
                 //indexing bins
                 int bin1Index = gOrientation / binSize;
