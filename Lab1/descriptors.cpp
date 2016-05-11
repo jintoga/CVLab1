@@ -36,10 +36,11 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
     Matrix gradientValues = Sobel::Builder().sobelXY(sobelX, sobelY).build().getMatrix();
     Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
 
-    const double binSize = 3.14*2 / this->numberOfBinsPerHistogram;
+    const double binSize = M_PI*2 / this->numberOfBinsPerHistogram;
 
     for (const auto& point : this->filteredPoIs) {
         Desciptor descriptor(this->numberOfBins);
+        //left-top corner point
         int x = std::get<0>(point) - this->gridCenter;
         int y = std::get<1>(point) - this->gridCenter;
 
@@ -47,31 +48,37 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
         for(int i = 0; i < 16; i++){
             for(int j = 0; j < 16; j++){
 
-
                 double gValue = gradientValues.getItensityAt(x + i, y + j);
                 double gOrientation = gradientOrientations.getItensityAt(x + i, y + j);
 
-                //indexing bins
+                //indexing bin1
                 int bin1Index = gOrientation / binSize;
+                //check for end edge
+                bin1Index %= this->numberOfBinsPerHistogram;
                 double bin1Center = bin1Index * binSize + binSize / 2;
 
-                //int bin2Index = gOrientation >= bin1Center ? bin1Index + 1 : bin1Index - 1;
+                //indexing bin2
                 int bin2Index = bin1Index + 1;
                 if(gOrientation < bin1Center)
                     bin2Index  = bin1Index - 1;
                 //check for histogram's edges
                 bin2Index = (bin2Index + this->numberOfBinsPerHistogram) % this->numberOfBinsPerHistogram;
 
+
+                //get current histogram's index
+                int curHistogramIndexByX = i / this->histogramSize;
+                int curHistogramIndexByY = j / this->histogramSize;
+
+                int curHistogramIndex = curHistogramIndexByX  + curHistogramIndexByY * 4;
+
                 //calculating distance to center
                 double bin1Dist = abs(gOrientation - bin1Center);
                 double bin2Dist = binSize - bin1Dist;
 
-                //get current histogram's index
-                int curHistIndex = (i / this->histogramSize * 4 + j / this->histogramSize) * 4;
-
-                descriptor[curHistIndex + bin1Index] += gValue * (1 - bin1Dist / binSize) ;
-                descriptor[curHistIndex + bin2Index] += gValue * (1 - bin2Dist / binSize) ;
-
+                descriptor[curHistogramIndex * numberOfBinsPerHistogram + bin1Index] +=
+                        gValue * (1 - bin1Dist / binSize) ;
+                descriptor[curHistogramIndex * numberOfBinsPerHistogram + bin2Index] +=
+                        gValue * (1 - bin2Dist / binSize) ;
             }
         }
         this->listOfDesciptors.emplace_back(descriptor);

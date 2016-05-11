@@ -137,7 +137,7 @@ public:
 
         double getGradientDirection(double x, double y){
             double res = atan2(y, x);
-            return res >= 0 ? res : res + 3.14 * 2;
+            return res >= 0 ? res : res + M_PI * 2;
         }
 
     private:
