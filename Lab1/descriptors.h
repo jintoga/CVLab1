@@ -18,9 +18,14 @@ public:
     Descriptors(const ListOfDesciptors& descriptors)
         :descriptors(descriptors)
     {}
-    ResultOfComparision compareDescriptors(const ListOfDesciptors& descriptors1,
+    static ResultOfComparision compareDescriptors(const ListOfDesciptors& descriptors1,
                                            const ListOfDesciptors& descriptors2);
     ListOfDesciptors getDescriptors();
+    static QImage getMergedMatrix(const Matrix& mat1,
+                           const Matrix& mat2,
+                           const Points& points1,
+                           const Points& points2,
+                           const ResultOfComparision& _matches);
     class Builder
     {
     private:
