@@ -19,8 +19,8 @@ int main(int argc, char *argv[])
     printf("points of interest filtered: %d\n\n", harris.getFilteredPoIs().size());
     harris.markPoints(grayscaleMatrix1, harris.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois1.png");
 
-    Descriptors descriptors = Descriptors::Builder(grayscaleMatrix1, harris.getFilteredPoIs()).init().descriptors().build();
-    printf("descriptors: %d\n", descriptors.getDescriptors().size());
+    Descriptors descriptors = Descriptors::Builder(grayscaleMatrix1, harris.getFilteredPoIs()).init().invariantRotationDescriptors().build();
+    printf("size of descriptors1: %d\n", descriptors.getDescriptors().size());
 
 
     QImage qImage2("/Users/Dat/Desktop/lena1 - Copy.jpg");
@@ -32,8 +32,8 @@ int main(int argc, char *argv[])
     printf("points of interest filtered: %d\n\n", harris2.getFilteredPoIs().size());
     harris.markPoints(grayscaleMatrix2, harris2.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois2.png");
 
-    Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().descriptors().build();
-    printf("descriptors: %d\n", descriptors2.getDescriptors().size());
+    Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().invariantRotationDescriptors().build();
+    printf("size of descriptors2: %d\n", descriptors2.getDescriptors().size());
 
     ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getDescriptors(), descriptors2.getDescriptors());
 
