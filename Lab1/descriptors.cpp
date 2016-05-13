@@ -107,6 +107,35 @@ Descriptors::Builder& Descriptors::Builder::init()
     return *this;
 }
 
+double getMagnitude(const Desciptor& descriptor)
+{
+    double sum = 0;
+    for(int i = 0; i < 128; i++)
+    {
+        sum += descriptor[i] * descriptor[i];
+    }
+
+    return sqrt(sum);
+}
+
+Desciptor Descriptors::Builder::normalize(const Desciptor& descriptor)
+{
+    Desciptor result = descriptor;
+    double magnitude = getMagnitude(result);
+    for(int i = 0; i < 128; i++) {
+        result[i] /= magnitude;
+        if (result[i] > 0.2) {
+            result[i] = 0.2;
+        }
+    }
+
+    magnitude = getMagnitude(result);
+    for(int i = 0; i < 128; i++) {
+        result[i] /= magnitude;
+    }
+    return result;
+}
+
 Descriptors::Builder& Descriptors::Builder::descriptors()
 {
     printf("Building Descriptors\n");
@@ -135,10 +164,6 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
                 int bin1Index = gOrientation / binSize;
                 //check for end edge
                 bin1Index %= this->numberOfBinsPerHistogram;
-//                if (bin1Index > numberOfBinsPerHistogram - 1) {
-//                    bin1Index = 0;
-//                     gOrientation -= M_PI * 2;
-//                }
                 double bin1Center = bin1Index * binSize + binSize / 2;
 
                 //indexing bin2
@@ -168,17 +193,7 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
         }
 
         //normalizing histograms
-        for(int i = 0; i < histogramSize*histogramSize; i++){
-            double max = 1E-15;
-            for(int j = 0; j < numberOfBinsPerHistogram; j++){
-                if(max < descriptor[i*numberOfBinsPerHistogram + j]){
-                    max = descriptor[i*numberOfBinsPerHistogram + j];
-                }
-            }
-            for(int j = 0; j < numberOfBinsPerHistogram; j++){
-                descriptor[i*numberOfBinsPerHistogram + j] = descriptor[i*numberOfBinsPerHistogram + j] / max;
-            }
-        }
+        descriptor = normalize(descriptor);
 
         this->listOfDesciptors.emplace_back(descriptor);
     }

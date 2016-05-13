@@ -40,6 +40,7 @@ public:
         Builder();
         Builder(const Matrix& matrix, const Points& filteredPoIs);
         Builder& init();
+        Desciptor normalize(const Desciptor& descriptor);
         Builder& descriptors();
 
         Descriptors build() const;

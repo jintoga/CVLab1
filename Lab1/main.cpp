@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     printf("descriptors: %d\n", descriptors.getDescriptors().size());
 
 
-    QImage qImage2("/Users/Dat/Desktop/lena1 - Copy.jpg");
+    QImage qImage2("/Users/Dat/Desktop/lena2.jpg");
 
     Matrix grayscaleMatrix2 = Matrix::getGrayScaleMatrix(qImage2);
     Matrix::exportImage(grayscaleMatrix2).save("/Users/Dat/Desktop/myoutputs/grayscale2.png");
