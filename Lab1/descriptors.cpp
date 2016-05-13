@@ -49,20 +49,6 @@ ResultOfComparision Descriptors::compareDescriptors(const ListOfDescriptors& des
     return matches;
 }
 
-double dist(const Descriptor& d)
-{
-
-
-    double sum = 0;
-    for(int i = 0; i < 128; i++)
-    {
-        sum += (d[i] - d[i]) * (d[i] - d[i]);
-    }
-
-    return sqrt(sum);
-}
-
-
 QImage Descriptors::getMergedMatrix(const Matrix& mat1,
                                     const Matrix& mat2,
                                     const Points& points1,
@@ -220,33 +206,15 @@ static double interpolate(const double x0, const double x1, const double x2,
 
 std::pair<double, double> rotate(double x0, double y0, double x1, double y1, double angle)
 {
-    if(x0 == x1 && y0 == y1)
-        return std::make_pair(x0, y0);
-
     //находим угол
     double deltaX = x1 - x0;
     double deltaY = y0 - y1;
-    double dist = hypot(deltaX, deltaY);
 
-    double angleQQ = acos(deltaX / dist);
-    if(deltaY < 0)
-        angleQQ = (2 * M_PI - angleQQ) / M_PI * 180;
-    else
-        angleQQ = angleQQ / M_PI * 180;
-
-    double newAngle = angleQQ - angle;
-    if(newAngle < 0)
-        newAngle += 360;
-
-    double newDeltaX = cos(newAngle / 180 * M_PI) * dist;
-    double newDeltaY = sin(newAngle / 180 * M_PI) * dist;
+    double newDeltaX = cos(angle) * deltaX - sin(angle) * deltaY;
+    double newDeltaY = sin(angle) * deltaX + cos(angle) * deltaY;
 
     double newX = x0 + newDeltaX;
     double newY = y0 - newDeltaY;
-
-
-//    double newX = (x0 - 8) * cos(angle) - (y0 - 8) * sin(angle);
-//    double newY = (x1 - 8) * sin(angle) + (y1 - 8) * cos(angle);
 
     return std::make_pair(newX,newY);
 }
@@ -329,15 +297,15 @@ Descriptor Descriptors::Builder::getFinalBins(Point point, double mainOrt, int x
 
     //max distance
     int maxDist = this->gridCenter * sqrt(2) + 1;
-    int pX = std::get<0>(point);
-    int pY = std::get<1>(point);
-    for(int i = pX - maxDist; i < pX; i++){
-        for(int j = pY - maxDist; j < pY; j++){
-            auto temp = rotate(pX, pY, i, j, mainOrt);
+    int pX = std::get<1>(point);
+    int pY = std::get<0>(point);
+    for(int i = pX - maxDist; i < pX + maxDist; i++){
+        for(int j = pY - maxDist; j < pY + maxDist; j++){
+            auto temp = rotate(pX, pY, i, j, -mainOrt);
             double newX = temp.first;
             double newY = temp.second;
             //after rotation check if new coordinates are inside of current area
-            if(newX < x || newX > x + 16 || newY < y || newY > y + 16){
+            if(newX < x || newX > x + 16 || newY < y || newY > y + 16) {
                 continue;
             }
 
@@ -347,11 +315,16 @@ Descriptor Descriptors::Builder::getFinalBins(Point point, double mainOrt, int x
             //get current histogram's index in grid
             int curHistogramIndexByX = newX / this->histogramSize;
             int curHistogramIndexByY = newY / this->histogramSize;
+            if (curHistogramIndexByX > 3)
+                curHistogramIndexByX = 3;
+            if (curHistogramIndexByX < 0)
+                curHistogramIndexByX = 0;
+            if (curHistogramIndexByY > 3)
+                curHistogramIndexByY = 3;
+            if (curHistogramIndexByY < 0)
+                curHistogramIndexByY = 0;
 
             int curHistogramIndex = curHistogramIndexByX  + curHistogramIndexByY * 4;
-
-            if(curHistogramIndex >31 || curHistogramIndex <0)
-                curHistogramIndex = 1;
 
             double gValue = gradientValues.getItensityAt(i, j);
             double gOrientation = gradientOrientations.getItensityAt(i, j) - mainOrt;
@@ -406,8 +379,8 @@ Descriptors::Builder& Descriptors::Builder::invariantRotationDescriptors()
     for (const auto& point : this->filteredPoIs) {
 
         //left-top corner point
-        int x = std::get<0>(point) - this->gridCenter;
-        int y = std::get<1>(point) - this->gridCenter;
+        int x = std::get<1>(point) - this->gridCenter;
+        int y = std::get<0>(point) - this->gridCenter;
 
         Orientations orientations = findOrientationBins(x, y, orientationBinSize);
 
