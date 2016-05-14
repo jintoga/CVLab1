@@ -37,7 +37,7 @@ public:
         ListOfDescriptors listOfDescriptors;
         const int gridCenter = 8;
         const int binsPerHistogram = 8;
-        const int orientationsPerHistogram = 36;
+        const int binsOfWideHistogram = 36;
         const int histogramSize = 4;
         const int numberOfBins = binsPerHistogram * histogramSize * histogramSize;
     public:

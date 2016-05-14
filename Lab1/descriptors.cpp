@@ -214,12 +214,13 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
     int cwidth = matrix.getWidth() + DRAD * 2;
     float sqs = DRAD / 2.;
     sqs *= sqs;
-
+    Orientations orientations(binsOfWideHistogram);
     for (const auto& point : this->filteredPoIs) {
 
         int x = std::get<0>(point) + DRAD;
         int y = std::get<1>(point) + DRAD;
 
+        //init descriptor
         RorationInvariantDescriptor descriptor;
         std::get<1>(descriptor) = x - DRAD;
         std::get<2>(descriptor) = y - DRAD;
@@ -240,19 +241,18 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
                 double len = sqrtf(dy * dy + dx * dx);
                 len *= expf(-(cy * cy + cx * cx) / (2.f * sqs));
 
-                double alph = fi * orientationsPerHistogram * 0.5f / M_PI;
+                double alph = fi * binsOfWideHistogram * 0.5f / M_PI;
                 int drcn = int(alph);
                 int drnx = drcn + 1;
-                if (drnx == orientationsPerHistogram)
+                if (drnx == binsOfWideHistogram)
                     drnx = 0;
 
                 double weight = alph - drcn;
-                descriptorValue[drcn] += len * (1 - weight);
-                descriptorValue[drnx] += len * weight;
+                orientations[drcn] += len * (1 - weight);
+                orientations[drnx] += len * weight;
             }
 
         }
-        std::get<0>(descriptor) = descriptorValue;
         printf("found main orientation");
     }
 
