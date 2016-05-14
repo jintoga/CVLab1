@@ -56,7 +56,7 @@ QImage Descriptors::getMergedMatrix(const Matrix& mat1,
                                     const Points& points2,
                                     const ResultOfComparision& matches){
     Matrix mergedMat(std::max(mat1.getHeight(), mat2.getHeight()),
-                          mat1.getWidth() + mat2.getWidth());
+                     mat1.getWidth() + mat2.getWidth());
     for (int i = 0, ei = mat1.getHeight(); i < ei; i++) {
         for (int j = 0, ej = mat1.getWidth(); j < ej; j++) {
             mergedMat.setIntensity(i, j, mat1.getItensityAt(i, j));
@@ -107,10 +107,10 @@ Descriptors::Builder& Descriptors::Builder::init()
     return *this;
 }
 
-double getMagnitude(const Desciptor& descriptor)
+double getMagnitude(const Desciptor& descriptor, int numberOfBins)
 {
     double sum = 0;
-    for(int i = 0; i < 128; i++)
+    for(int i = 0; i < numberOfBins; i++)
     {
         sum += descriptor[i] * descriptor[i];
     }
@@ -121,16 +121,16 @@ double getMagnitude(const Desciptor& descriptor)
 Desciptor Descriptors::Builder::normalize(const Desciptor& descriptor)
 {
     Desciptor result = descriptor;
-    double magnitude = getMagnitude(result);
-    for(int i = 0; i < 128; i++) {
+    double magnitude = getMagnitude(result, numberOfBins);
+    for(int i = 0; i < numberOfBins; i++) {
         result[i] /= magnitude;
         if (result[i] > 0.2) {
             result[i] = 0.2;
         }
     }
 
-    magnitude = getMagnitude(result);
-    for(int i = 0; i < 128; i++) {
+    magnitude = getMagnitude(result, numberOfBins);
+    for(int i = 0; i < numberOfBins; i++) {
         result[i] /= magnitude;
     }
     return result;
