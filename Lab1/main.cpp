@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QImage qImage1("/Users/Dat/Desktop/lena1.jpg");
+    QImage qImage1("/Users/Dat/Desktop/q1.png");
 
     Matrix grayscaleMatrix1 = Matrix::getGrayScaleMatrix(qImage1);
     Matrix::exportImage(grayscaleMatrix1).save("/Users/Dat/Desktop/myoutputs/grayscale1.png");
@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
     printf("descriptors: %d\n", descriptors.getDescriptors().size());
 
 
-    QImage qImage2("/Users/Dat/Desktop/lena2.jpg");
+    QImage qImage2("/Users/Dat/Desktop/q2.png");
 
     Matrix grayscaleMatrix2 = Matrix::getGrayScaleMatrix(qImage2);
     Matrix::exportImage(grayscaleMatrix2).save("/Users/Dat/Desktop/myoutputs/grayscale2.png");

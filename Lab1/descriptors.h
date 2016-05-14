@@ -9,6 +9,7 @@
 using Desciptor = std::vector<double>;
 using ListOfDesciptors = std::vector<Desciptor>;
 using ResultOfComparision = std::vector<std::pair<int, int>>;
+using Orientations = std::vector<double>;
 class Descriptors
 {
 private:
@@ -42,7 +43,6 @@ public:
         Builder& init();
         Desciptor normalize(const Desciptor& descriptor);
         Builder& descriptors();
-
         Descriptors build() const;
     };
 };
