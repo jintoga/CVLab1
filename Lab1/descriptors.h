@@ -6,22 +6,24 @@
 #include "gauss.h"
 #include "pointsofinterest.h"
 
-using Desciptor = std::vector<double>;
-using ListOfDesciptors = std::vector<Desciptor>;
+using Descriptor = std::vector<double>;
+using ListOfDescriptors = std::vector<Descriptor>;
 using ResultOfComparision = std::vector<std::pair<int, int>>;
 using Orientations = std::vector<double>;
+using RorationInvariantDescriptor = std::tuple<Descriptor, int, int>;
+
 class Descriptors
 {
 private:
-    ListOfDesciptors descriptors;
+    ListOfDescriptors descriptors;
 public:
     Descriptors();
-    Descriptors(const ListOfDesciptors& descriptors)
+    Descriptors(const ListOfDescriptors& descriptors)
         :descriptors(descriptors)
     {}
-    static ResultOfComparision compareDescriptors(const ListOfDesciptors& descriptors1,
-                                           const ListOfDesciptors& descriptors2);
-    ListOfDesciptors getDescriptors();
+    static ResultOfComparision compareDescriptors(const ListOfDescriptors& descriptors1,
+                                           const ListOfDescriptors& descriptors2);
+    ListOfDescriptors getDescriptors();
     static QImage getMergedMatrix(const Matrix& mat1,
                            const Matrix& mat2,
                            const Points& points1,
@@ -32,17 +34,19 @@ public:
     private:
         Matrix matrix;
         Points filteredPoIs;
-        ListOfDesciptors listOfDesciptors;
+        ListOfDescriptors listOfDescriptors;
         const int gridCenter = 8;
-        const int numberOfBinsPerHistogram = 8;
+        const int binsPerHistogram = 8;
+        const int orientationsPerHistogram = 36;
         const int histogramSize = 4;
-        const int numberOfBins = numberOfBinsPerHistogram * histogramSize * histogramSize;
+        const int numberOfBins = binsPerHistogram * histogramSize * histogramSize;
     public:
         Builder();
         Builder(const Matrix& matrix, const Points& filteredPoIs);
         Builder& init();
-        Desciptor normalize(const Desciptor& descriptor);
+        Descriptor normalize(const Descriptor& descriptor);
         Builder& descriptors();
+        Builder& rotationInvariantDescriptors();
         Descriptors build() const;
     };
 };

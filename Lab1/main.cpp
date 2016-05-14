@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QImage qImage1("/Users/Dat/Desktop/q1.png");
+    QImage qImage1("/Users/Dat/Desktop/lena1.jpg");
 
     Matrix grayscaleMatrix1 = Matrix::getGrayScaleMatrix(qImage1);
     Matrix::exportImage(grayscaleMatrix1).save("/Users/Dat/Desktop/myoutputs/grayscale1.png");
@@ -19,11 +19,11 @@ int main(int argc, char *argv[])
     printf("points of interest filtered: %d\n\n", harris.getFilteredPoIs().size());
     harris.markPoints(grayscaleMatrix1, harris.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois1.png");
 
-    Descriptors descriptors = Descriptors::Builder(grayscaleMatrix1, harris.getFilteredPoIs()).init().descriptors().build();
+    Descriptors descriptors = Descriptors::Builder(grayscaleMatrix1, harris.getFilteredPoIs()).init().rotationInvariantDescriptors().build();
     printf("descriptors: %d\n", descriptors.getDescriptors().size());
 
 
-    QImage qImage2("/Users/Dat/Desktop/q2.png");
+    QImage qImage2("/Users/Dat/Desktop/lena1 - Copy.jpg");
 
     Matrix grayscaleMatrix2 = Matrix::getGrayScaleMatrix(qImage2);
     Matrix::exportImage(grayscaleMatrix2).save("/Users/Dat/Desktop/myoutputs/grayscale2.png");
@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     printf("points of interest filtered: %d\n\n", harris2.getFilteredPoIs().size());
     harris.markPoints(grayscaleMatrix2, harris2.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois2.png");
 
-    Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().descriptors().build();
+    Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().rotationInvariantDescriptors().build();
     printf("descriptors: %d\n", descriptors2.getDescriptors().size());
 
     ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getDescriptors(), descriptors2.getDescriptors());

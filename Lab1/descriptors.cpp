@@ -5,12 +5,12 @@ Descriptors::Descriptors()
 
 }
 
-ListOfDesciptors Descriptors::getDescriptors()
+ListOfDescriptors Descriptors::getDescriptors()
 {
     return this->descriptors;
 }
 
-static double getDistance(const Desciptor& desc1, const Desciptor& desc2) {
+static double getDistance(const Descriptor& desc1, const Descriptor& desc2) {
     double sum = 0;
     for (unsigned i = 0; i < desc1.size(); i++) {
         sum += (desc1[i] - desc2[i])*(desc1[i] - desc2[i]);
@@ -18,7 +18,7 @@ static double getDistance(const Desciptor& desc1, const Desciptor& desc2) {
     return sqrt(sum);
 }
 
-static unsigned getIndexOfNearest(const Desciptor& desc, const ListOfDesciptors& descriptors) {
+static unsigned getIndexOfNearest(const Descriptor& desc, const ListOfDescriptors& descriptors) {
 
     int minIndex = 0;
     auto minDistance = getDistance(desc, descriptors[minIndex]);
@@ -34,8 +34,8 @@ static unsigned getIndexOfNearest(const Desciptor& desc, const ListOfDesciptors&
     return minIndex;
 }
 
-ResultOfComparision Descriptors::compareDescriptors(const ListOfDesciptors& descriptors1,
-                                                    const ListOfDesciptors& descriptors2){
+ResultOfComparision Descriptors::compareDescriptors(const ListOfDescriptors& descriptors1,
+                                                    const ListOfDescriptors& descriptors2){
     ResultOfComparision matches;
 
     for (unsigned i = 0; i < descriptors1.size(); i++) {
@@ -107,7 +107,7 @@ Descriptors::Builder& Descriptors::Builder::init()
     return *this;
 }
 
-double getMagnitude(const Desciptor& descriptor, int numberOfBins)
+double getMagnitude(const Descriptor& descriptor, int numberOfBins)
 {
     double sum = 0;
     for(int i = 0; i < numberOfBins; i++)
@@ -118,9 +118,9 @@ double getMagnitude(const Desciptor& descriptor, int numberOfBins)
     return sqrt(sum);
 }
 
-Desciptor Descriptors::Builder::normalize(const Desciptor& descriptor)
+Descriptor Descriptors::Builder::normalize(const Descriptor& descriptor)
 {
-    Desciptor result = descriptor;
+    Descriptor result = descriptor;
     double magnitude = getMagnitude(result, numberOfBins);
     for(int i = 0; i < numberOfBins; i++) {
         result[i] /= magnitude;
@@ -146,10 +146,10 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
     Matrix gradientValues = Sobel::Builder().sobelXY(sobelX, sobelY).build().getMatrix();
     Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
 
-    const double binSize = M_PI*2 / this->numberOfBinsPerHistogram;
+    const double binSize = M_PI*2 / this->binsPerHistogram;
 
     for (const auto& point : this->filteredPoIs) {
-        Desciptor descriptor(this->numberOfBins);
+        Descriptor descriptor(this->numberOfBins);
         //left-top corner point
         int x = std::get<0>(point) - this->gridCenter;
         int y = std::get<1>(point) - this->gridCenter;
@@ -163,7 +163,7 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
                 //indexing bin1
                 int bin1Index = gOrientation / binSize;
                 //check for end edge
-                bin1Index %= this->numberOfBinsPerHistogram;
+                bin1Index %= this->binsPerHistogram;
                 double bin1Center = bin1Index * binSize + binSize / 2;
 
                 //indexing bin2
@@ -172,7 +172,7 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
                     bin2Index  = bin1Index - 1;
                 }
                 //check for histogram's edges
-                bin2Index = (bin2Index + this->numberOfBinsPerHistogram) % this->numberOfBinsPerHistogram;
+                bin2Index = (bin2Index + this->binsPerHistogram) % this->binsPerHistogram;
 
 
                 //get current histogram's index in grid
@@ -185,9 +185,9 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
                 double bin1Dist = abs(gOrientation - bin1Center);
                 double bin2Dist = binSize - bin1Dist;
 
-                descriptor[curHistogramIndex * numberOfBinsPerHistogram + bin1Index] +=
+                descriptor[curHistogramIndex * binsPerHistogram + bin1Index] +=
                         gValue * (1 - bin1Dist / binSize) ;
-                descriptor[curHistogramIndex * numberOfBinsPerHistogram + bin2Index] +=
+                descriptor[curHistogramIndex * binsPerHistogram + bin2Index] +=
                         gValue * (1 - bin2Dist / binSize) ;
             }
         }
@@ -195,14 +195,71 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
         //normalizing histograms
         descriptor = normalize(descriptor);
 
-        this->listOfDesciptors.emplace_back(descriptor);
+        this->listOfDescriptors.emplace_back(descriptor);
     }
 
     return *this;
 }
 
+Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
+{
+    printf("Building Rotation Invariant Descriptors\n");
+    const Matrix sobelX = Sobel::Builder(matrix).sobelX().build().getMatrix();
+    const Matrix sobelY = Sobel::Builder(matrix).sobelY().build().getMatrix();
+    Matrix gradientValues = Sobel::Builder().sobelXY(sobelX, sobelY).build().getMatrix();
+    Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
+
+    const double binSize = M_PI*2 / this->binsPerHistogram;
+    const int DRAD = 4;
+    int cwidth = matrix.getWidth() + DRAD * 2;
+    float sqs = DRAD / 2.;
+    sqs *= sqs;
+
+    for (const auto& point : this->filteredPoIs) {
+
+        int x = std::get<0>(point) + DRAD;
+        int y = std::get<1>(point) + DRAD;
+
+        RorationInvariantDescriptor descriptor;
+        std::get<1>(descriptor) = x - DRAD;
+        std::get<2>(descriptor) = y - DRAD;
+        Descriptor descriptorValue(this->binsPerHistogram); //should be put back to RorationInvariantDescriptor object after working process
+
+        //search for main orientation
+        for (int cy = -DRAD; cy < DRAD; ++cy) {
+            for (int cx = -DRAD; cx < DRAD; ++cx) {
+                if (cy * cy + cx * cx > DRAD * DRAD)
+                    continue;
+                int qy = x + cy;
+                int qx = y + cx;
+                double dx = sobelX.getItensityAt(qx, qy);
+                double dy = sobelY.getItensityAt(qx, qy);
+
+
+                double fi = atan2f(-dy, dx) + M_PI;
+                double len = sqrtf(dy * dy + dx * dx);
+                len *= expf(-(cy * cy + cx * cx) / (2.f * sqs));
+
+                double alph = fi * orientationsPerHistogram * 0.5f / M_PI;
+                int drcn = int(alph);
+                int drnx = drcn + 1;
+                if (drnx == orientationsPerHistogram)
+                    drnx = 0;
+
+                double weight = alph - drcn;
+                descriptorValue[drcn] += len * (1 - weight);
+                descriptorValue[drnx] += len * weight;
+            }
+
+        }
+        std::get<0>(descriptor) = descriptorValue;
+        printf("found main orientation");
+    }
+
+    return *this;
+}
 
 Descriptors Descriptors::Builder::build() const
 {
-    return Descriptors(this->listOfDesciptors);
+    return Descriptors(this->listOfDescriptors);
 }
