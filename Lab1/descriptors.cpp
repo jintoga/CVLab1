@@ -211,10 +211,10 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
 
     const double binSize = M_PI*2 / this->binsPerHistogram;
     const int DRAD = 4;
-    int cwidth = matrix.getWidth() + DRAD * 2;
     float sqs = DRAD / 2.;
     sqs *= sqs;
     Orientations orientations(binsOfWideHistogram);
+    std::vector<int> dirs;
     for (const auto& point : this->filteredPoIs) {
 
         int x = std::get<0>(point) + DRAD;
@@ -236,12 +236,12 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
                 double dx = sobelX.getItensityAt(qx, qy);
                 double dy = sobelY.getItensityAt(qx, qy);
 
+                double gOrientation = gradientOrientations.getItensityAt(qx,qy);
 
-                double fi = atan2f(-dy, dx) + M_PI;
                 double len = sqrtf(dy * dy + dx * dx);
                 len *= expf(-(cy * cy + cx * cx) / (2.f * sqs));
 
-                double alph = fi * binsOfWideHistogram * 0.5f / M_PI;
+                double alph = gOrientation * binsOfWideHistogram * 0.5f / M_PI;
                 int drcn = int(alph);
                 int drnx = drcn + 1;
                 if (drnx == binsOfWideHistogram)
@@ -251,9 +251,27 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
                 orientations[drcn] += len * (1 - weight);
                 orientations[drnx] += len * weight;
             }
-
         }
-        printf("found main orientation");
+        printf("found main orientations");
+
+        //find max pair
+        //1st
+        dirs.clear();
+        int maxId = 0;
+        for (int i = 1; i < binsOfWideHistogram; i++) {
+            if (orientations[i] > orientations[maxId])
+                maxId = i;
+        }
+        dirs.push_back(maxId);
+        //2nd
+        maxId = (maxId + 1) % binsOfWideHistogram;
+        for (int i = 0; i < binsOfWideHistogram; i++) {
+            if (i != dirs[0] && orientations[i] > orientations[maxId])
+                maxId = i;
+        }
+        if (orientations[maxId] >= orientations[dirs[0]] * 0.8)
+            dirs.push_back(maxId);
+        printf("pair: %d - %d\n",dirs[0],dirs[1]);
     }
 
     return *this;
