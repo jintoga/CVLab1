@@ -5,8 +5,16 @@ Descriptors::Descriptors()
 
 }
 
-ListOfDescriptors Descriptors::getDescriptors()
+ListOfDescriptors Descriptors::getDescriptors(boolean isRotationInvariant)
 {
+    if(isRotationInvariant){
+        ListOfDescriptors listOfDescriptors;
+        listOfDescriptors.reserve(this->riDescriptors.size());
+        for(RorationInvariantDescriptor riDesc : riDescriptors){
+            listOfDescriptors.emplace_back(std::get<0>(riDesc));
+        }
+        return listOfDescriptors;
+    }
     return this->descriptors;
 }
 
@@ -48,7 +56,6 @@ ResultOfComparision Descriptors::compareDescriptors(const ListOfDescriptors& des
 
     return matches;
 }
-
 
 QImage Descriptors::getMergedMatrix(const Matrix& mat1,
                                     const Matrix& mat2,
@@ -155,8 +162,8 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
         int y = std::get<1>(point) - this->gridCenter;
 
         //building descriptor's histograms
-        for(int i = 0; i < 16; i++){
-            for(int j = 0; j < 16; j++){
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
 
                 double gValue = gradientValues.getItensityAt(x + i, y + j);
                 double gOrientation = gradientOrientations.getItensityAt(x + i, y + j);
@@ -201,17 +208,54 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
     return *this;
 }
 
+double Descriptors::Builder::interpolation(const double x2, const double y1, const double y2, const double y3)
+{
+        double ax[] = {double(x2 - 1), double(x2), double(x2 + 1)};
+        double ay[] = {y1, y2, y3};
+
+        double q1[3] = {y1, 0, 0}; // current coeffs
+        double q2[3]; // additional coeffs
+
+        //parabolic interpolation
+        for (int i = 1; i < 3; i++) {
+            double co = 1;
+            for (int j = 0; j < i; j++) {
+                co *= (ax[i] - ax[j]);
+            }
+            double cur = ax[i] * (ax[i] * q1[2] + q1[1]) + q1[0];
+            co = (ay[i] - cur) / co;
+            fill(begin(q2), end(q2), 0);
+            q2[0] = 1;
+            for (int j = 0; j < i; j++) {
+                double z = 0;
+                for (int c3 = 0; c3 <= j; c3++) {
+                    double nx = q2[c3];
+                    q2[c3] = z - (nx * ax[j]);
+                    z = nx;
+                }
+                q2[j + 1] = z;
+            }
+            for (int j = 0; j < 3; j++) {
+                q1[j] += q2[j] * co;
+            }
+        }
+
+        // resulting orientation
+        double res = -q1[1] / (2 * q1[2]);
+        if (res < 0)
+            res += binsOfWideHistogram;
+        return M_PI * 2 * (res) / binsOfWideHistogram;
+}
+
 Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
 {
     printf("Building Rotation Invariant Descriptors\n");
     const Matrix sobelX = Sobel::Builder(matrix).sobelX().build().getMatrix();
     const Matrix sobelY = Sobel::Builder(matrix).sobelY().build().getMatrix();
-    Matrix gradientValues = Sobel::Builder().sobelXY(sobelX, sobelY).build().getMatrix();
     Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
 
-    const double binSize = M_PI*2 / this->binsPerHistogram;
     const int DRAD = 4;
-    float sqs = DRAD / 2.;
+    double sqs = DRAD / 2.;
     sqs *= sqs;
     Orientations orientations(binsOfWideHistogram);
     std::vector<int> dirs;
@@ -224,7 +268,10 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
         RorationInvariantDescriptor descriptor;
         std::get<1>(descriptor) = x - DRAD;
         std::get<2>(descriptor) = y - DRAD;
-        Descriptor descriptorValue(this->binsPerHistogram); //should be put back to RorationInvariantDescriptor object after working process
+        Descriptor descriptorValue = std::get<0>(descriptor);
+        descriptorValue.resize(numberOfBins);
+        //clear orientations
+        std::fill(begin(orientations), end(orientations), 0);
 
         //search for main orientation
         for (int cy = -DRAD; cy < DRAD; ++cy) {
@@ -236,42 +283,109 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
                 double dx = sobelX.getItensityAt(qx, qy);
                 double dy = sobelY.getItensityAt(qx, qy);
 
-                double gOrientation = gradientOrientations.getItensityAt(qx,qy);
-
                 double len = sqrtf(dy * dy + dx * dx);
                 len *= expf(-(cy * cy + cx * cx) / (2.f * sqs));
 
-                double alph = gOrientation * binsOfWideHistogram * 0.5f / M_PI;
-                int drcn = int(alph);
-                int drnx = drcn + 1;
-                if (drnx == binsOfWideHistogram)
-                    drnx = 0;
+                double fi = gradientOrientations.getItensityAt(qx, qy);
+                double alph = fi * binsOfWideHistogram * 0.5f / M_PI;
 
-                double weight = alph - drcn;
-                orientations[drcn] += len * (1 - weight);
-                orientations[drnx] += len * weight;
+                int bin1Index = int(alph);
+                int bin2Index = bin1Index + 1;
+                if (bin2Index == binsOfWideHistogram)
+                    bin2Index = 0;
+
+                double weight = alph - bin1Index;
+                orientations[bin1Index] += len * (1 - weight);
+                orientations[bin2Index] += len * weight;
             }
         }
-        printf("found main orientations");
 
         //find max pair
         //1st
         dirs.clear();
-        int maxId = 0;
+        int indexOfMax = 0;
         for (int i = 1; i < binsOfWideHistogram; i++) {
-            if (orientations[i] > orientations[maxId])
-                maxId = i;
+            if (orientations[i] > orientations[indexOfMax])
+                indexOfMax = i;
         }
-        dirs.push_back(maxId);
+        dirs.push_back(indexOfMax);
         //2nd
-        maxId = (maxId + 1) % binsOfWideHistogram;
+        indexOfMax = (indexOfMax + 1) % binsOfWideHistogram;
         for (int i = 0; i < binsOfWideHistogram; i++) {
-            if (i != dirs[0] && orientations[i] > orientations[maxId])
-                maxId = i;
+            if (i != dirs[0] && orientations[i] > orientations[indexOfMax])
+                indexOfMax = i;
         }
-        if (orientations[maxId] >= orientations[dirs[0]] * 0.8)
-            dirs.push_back(maxId);
-        printf("pair: %d - %d\n",dirs[0],dirs[1]);
+        if (orientations[indexOfMax] >= orientations[dirs[0]] * 0.8)
+            dirs.push_back(indexOfMax);
+
+
+        for (unsigned i = 0; i < dirs.size(); i++) {
+            // interpolation init
+            int x2 = dirs[i];
+            int x1 = (x2 + numberOfBins - 1) % numberOfBins;
+            int x3 = (x2 + 1) % numberOfBins;
+            double y1 = orientations[x1];
+            double y2 = orientations[x2];
+            double y3 = orientations[x3];
+
+            if (y2 < y1 || y2 < y3)
+                continue;
+            //interpolate
+            double orientation = interpolation(x2, y1, y2, y3);
+            get<3>(descriptor) = orientation;
+
+            double rsin = sinf(orientation);
+            double rcos = cosf(orientation);
+
+            for (int cy = -DRAD; cy <= DRAD; cy++) {
+                for (int cx = -DRAD; cx <= DRAD; cx++) {
+                    if (cy * cy + cx * cx > DRAD * DRAD)
+                        continue;
+
+                    double dx = sobelX.getItensityAt(y + cx, x + cy);
+                    double dy = sobelY.getItensityAt(y + cx, x + cy);
+
+                    double fi = gradientOrientations.getItensityAt(y + cx, x + cy) - orientation;
+                    if (fi < 0)
+                        fi += M_PI * 2.;
+                    double alph = fi * binsPerHistogram * .5 / M_PI;
+
+                    double len = sqrtf(dy * dy + dx * dx);
+                    len *= expf(-(cy * cy + cx * cx) / (2.f * sqs));
+
+                    int bin1Index = int(alph);
+                    int bin2Index = bin1Index + 1;
+                    if (bin2Index == binsPerHistogram)
+                        bin2Index = 0;
+
+                    double weight = alph - bin1Index;
+
+                    // getting normalized coorditates
+                    double qy = -((-cy) * rcos - (cx) * rsin);
+                    double qx = (cx) * rcos + (-cy) * rsin;
+                    // box`s selection
+                    int ybox = int((qy - 0.5 + DRAD) / histogramSize);
+                    int xbox = int((qx - 0.5 + DRAD) / histogramSize);
+                    if (ybox < 0)
+                        ybox = 0;
+                    if (ybox >= histogramSize)
+                        ybox = histogramSize - 1;
+                    if (xbox < 0)
+                        xbox = 0;
+                    if (xbox >= histogramSize)
+                        xbox = histogramSize - 1;
+
+                    descriptorValue[(ybox * histogramSize + xbox) * binsPerHistogram + bin1Index] +=
+                            len * (1 - weight);
+                    descriptorValue[(ybox * histogramSize + xbox) * binsPerHistogram + bin2Index] +=
+                            len * weight;
+                }
+            }
+            std::get<0>(descriptor) = normalize(descriptorValue);
+            this->listOfRIDescriptors.emplace_back(descriptor);
+
+        }
+
     }
 
     return *this;
@@ -279,5 +393,5 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
 
 Descriptors Descriptors::Builder::build() const
 {
-    return Descriptors(this->listOfDescriptors);
+    return Descriptors(this->listOfRIDescriptors);
 }

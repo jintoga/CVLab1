@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
     harris.markPoints(grayscaleMatrix1, harris.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois1.png");
 
     Descriptors descriptors = Descriptors::Builder(grayscaleMatrix1, harris.getFilteredPoIs()).init().rotationInvariantDescriptors().build();
-    printf("descriptors: %d\n", descriptors.getDescriptors().size());
 
 
     QImage qImage2("/Users/Dat/Desktop/lena1 - Copy.jpg");
@@ -33,9 +32,8 @@ int main(int argc, char *argv[])
     harris.markPoints(grayscaleMatrix2, harris2.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois2.png");
 
     Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().rotationInvariantDescriptors().build();
-    printf("descriptors: %d\n", descriptors2.getDescriptors().size());
 
-    ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getDescriptors(), descriptors2.getDescriptors());
+    ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getDescriptors(true), descriptors2.getDescriptors(true));
 
     Descriptors::getMergedMatrix(grayscaleMatrix1,
                       grayscaleMatrix2,
