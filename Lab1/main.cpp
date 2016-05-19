@@ -37,12 +37,10 @@ int main(int argc, char *argv[])
     
     ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getDescriptors(true), descriptors2.getDescriptors(true));
 
-    auto d1 = descriptors.getRIDescriptors();
-    auto d2 = descriptors2.getRIDescriptors();
     Descriptors::getMergedMatrix(grayscaleMatrix1,
                       grayscaleMatrix2,
-                      d1,
-                      d2,
+                      descriptors.getRIDescriptors(),
+                      descriptors2.getRIDescriptors(),
                       matches).save("/Users/Dat/Desktop/myoutputs/merged.png");
     return 0;
 }

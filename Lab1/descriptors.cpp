@@ -23,16 +23,6 @@ ListOfRIDescriptors Descriptors::getRIDescriptors()
     return this->riDescriptors;
 }
 
-Points Descriptors::getRPOIs()
-{
-    Points p(riDescriptors.size());
-    for (size_t i = 0; i < p.size(); i++) {
-        auto &d = riDescriptors[i];
-        p[i] = make_tuple(get<1>(d), get<2>(d), get<3>(d));
-    }
-    return p;
-}
-
 static double getDistance(const Descriptor& desc1, const Descriptor& desc2) {
     double sum = 0;
     for (unsigned i = 0; i < desc1.size(); i++) {
@@ -120,12 +110,12 @@ QImage Descriptors::getMergedMatrix(const Matrix& mat1,
                                     const ResultOfComparision& _matches) {
     Points p1(d1.size());
     Points p2(d2.size());
-    for (size_t i = 0; i < p1.size(); i++) {
-        const auto& d = d1[i];
+    for (unsigned i = 0; i < p1.size(); i++) {
+        const auto d = d1[i];
         p1[i] = make_tuple(get<1>(d), get<2>(d), get<3>(d));
     }
-    for (size_t i = 0; i < p2.size(); i++) {
-        const auto& d = d2[i];
+    for (unsigned i = 0; i < p2.size(); i++) {
+        const auto d = d2[i];
         p2[i] = make_tuple(get<1>(d), get<2>(d), get<3>(d));
     }
     return Descriptors::getMergedMatrix(mat1, mat2, p1, p2, _matches);
@@ -285,7 +275,7 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
             if (orientations[i] > orientations[indexOfMax])
                 indexOfMax = i;
         }
-        peaks.push_back(indexOfMax);
+        peaks.emplace_back(indexOfMax);
         //2nd
         indexOfMax = (indexOfMax + 1) % binsOfWideHistogram;
         for (int i = 0; i < binsOfWideHistogram; i++) {
@@ -293,7 +283,7 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
                 indexOfMax = i;
         }
         if (orientations[indexOfMax] >= orientations[peaks[0]] * 0.8)
-            peaks.push_back(indexOfMax);
+            peaks.emplace_back(indexOfMax);
         
         
         for (unsigned i = 0; i < peaks.size(); i++) {

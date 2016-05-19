@@ -31,8 +31,7 @@ public:
                                            const ListOfDescriptors& descriptors2);
     ListOfDescriptors getDescriptors(boolean isRotationInvariant);
     ListOfRIDescriptors getRIDescriptors();
-    Points getRPOIs(); 
-    
+
     static QImage getMergedMatrix(const Matrix& mat1,
                            const Matrix& mat2,
                            const Points& points1,
