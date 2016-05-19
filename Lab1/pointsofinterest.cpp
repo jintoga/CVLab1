@@ -26,8 +26,8 @@ QImage PointsOfInterest::markPoints(const Matrix& mat, const Points& pois) {
     painter.setPen(Qt::red);
 
     for (const auto& point : pois) {
-        auto y = std::get<0>(point);
-        auto x = std::get<1>(point);
+        auto y = std::get<1>(point);
+        auto x = std::get<0>(point);
         painter.drawEllipse(QPointF(x,y), 1, 1);
     }
 
@@ -179,7 +179,7 @@ Points PointsOfInterest::Builder::findPoI(const Matrix& matrix, const double thr
                     }
                 }
                 if (isPoI) {
-                    points.emplace_back(i, j, matrix.getItensityAt(i, j));
+                    points.emplace_back(j, i, matrix.getItensityAt(i, j));
                 }
             }
 

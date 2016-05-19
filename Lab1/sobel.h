@@ -84,7 +84,7 @@ public:
 
             for(int i = 0; i < result.getHeight();i++){
                 for(int j = 0;j < result.getWidth();j++){
-                    auto gradient = getGradientDirection(mat1.getItensityAt(i, j), mat2.getItensityAt(i, j));
+                    auto gradient = getGradientDirection(mat1.getItensityAt(i, j), -mat2.getItensityAt(i, j));
                     result.setIntensity(i, j, gradient);
                 }
             }

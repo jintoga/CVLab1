@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    QImage qImage1("/Users/Dat/Desktop/lena1.jpg");
+    QImage qImage1("/Users/Dat/Desktop/q1.png");
 
     Matrix grayscaleMatrix1 = Matrix::getGrayScaleMatrix(qImage1);
     Matrix::exportImage(grayscaleMatrix1).save("/Users/Dat/Desktop/myoutputs/grayscale1.png");
@@ -19,10 +19,13 @@ int main(int argc, char *argv[])
     printf("points of interest filtered: %d\n\n", harris.getFilteredPoIs().size());
     harris.markPoints(grayscaleMatrix1, harris.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois1.png");
 
-    Descriptors descriptors = Descriptors::Builder(grayscaleMatrix1, harris.getFilteredPoIs()).init().rotationInvariantDescriptors().build();
+    Descriptors descriptors = Descriptors::Builder(grayscaleMatrix1, harris.getFilteredPoIs()).init().descriptors().build();
+    printf("descriptors 1 builded");
+    harris.markPoints(grayscaleMatrix1, descriptors.getRPOIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois1a.png");
 
 
-    QImage qImage2("/Users/Dat/Desktop/lena1 - Copy.jpg");
+    QImage qImage2("/Users/Dat/Desktop/q2.png");
+    printf("image 2 loaded");
 
     Matrix grayscaleMatrix2 = Matrix::getGrayScaleMatrix(qImage2);
     Matrix::exportImage(grayscaleMatrix2).save("/Users/Dat/Desktop/myoutputs/grayscale2.png");
@@ -31,14 +34,17 @@ int main(int argc, char *argv[])
     printf("points of interest filtered: %d\n\n", harris2.getFilteredPoIs().size());
     harris.markPoints(grayscaleMatrix2, harris2.getFilteredPoIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois2.png");
 
-    Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().rotationInvariantDescriptors().build();
+    Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().descriptors().build();
+    harris.markPoints(grayscaleMatrix2, descriptors2.getRPOIs()).save("/Users/Dat/Desktop/myoutputs/harris_filtered_pois2a.png");
 
-    ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getRIDescriptors(), descriptors2.getRIDescriptors());
-    printf("matches: %d\n", matches.size());
+    ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getDescriptors(true), descriptors2.getDescriptors(true));
+
+    auto d1 = descriptors.getRIDescriptors();
+    auto d2 = descriptors2.getRIDescriptors();
     Descriptors::getMergedMatrix(grayscaleMatrix1,
                       grayscaleMatrix2,
-                      harris.getFilteredPoIs(),
-                      harris2.getFilteredPoIs(),
+                      d1,
+                      d2,
                       matches).save("/Users/Dat/Desktop/myoutputs/merged.png");
     return 0;
 }
