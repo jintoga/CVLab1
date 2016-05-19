@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
 
     Descriptors descriptors2 = Descriptors::Builder(grayscaleMatrix2, harris2.getFilteredPoIs()).init().rotationInvariantDescriptors().build();
 
-    ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getDescriptors(true), descriptors2.getDescriptors(true));
-
+    ResultOfComparision matches = Descriptors::compareDescriptors(descriptors.getRIDescriptors(), descriptors2.getRIDescriptors());
+    printf("matches: %d\n", matches.size());
     Descriptors::getMergedMatrix(grayscaleMatrix1,
                       grayscaleMatrix2,
                       harris.getFilteredPoIs(),

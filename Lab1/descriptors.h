@@ -29,12 +29,20 @@ public:
     {}
     static ResultOfComparision compareDescriptors(const ListOfDescriptors& descriptors1,
                                            const ListOfDescriptors& descriptors2);
+    static ResultOfComparision compareDescriptors(const ListOfRIDescriptors& descriptors1,
+                                                  const ListOfRIDescriptors& descriptors2);
     ListOfDescriptors getDescriptors(boolean isRotationInvariant);
+    ListOfRIDescriptors getRIDescriptors();
     static QImage getMergedMatrix(const Matrix& mat1,
                            const Matrix& mat2,
                            const Points& points1,
                            const Points& points2,
-                           const ResultOfComparision& _matches);
+                           const ResultOfComparision& matches);
+    static QImage getMergedMatrix(const Matrix& mat1,
+                           const Matrix& mat2,
+                           const ListOfRIDescriptors& descriptors1,
+                           const ListOfRIDescriptors& descriptors2,
+                           const ResultOfComparision& matches);
     class Builder
     {
     private:

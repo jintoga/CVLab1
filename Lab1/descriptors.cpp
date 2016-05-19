@@ -18,6 +18,11 @@ ListOfDescriptors Descriptors::getDescriptors(boolean isRotationInvariant)
     return this->descriptors;
 }
 
+ListOfRIDescriptors Descriptors::getRIDescriptors()
+{
+    return this->riDescriptors;
+}
+
 static double getDistance(const Descriptor& desc1, const Descriptor& desc2) {
     double sum = 0;
     for (unsigned i = 0; i < desc1.size(); i++) {
@@ -51,6 +56,47 @@ ResultOfComparision Descriptors::compareDescriptors(const ListOfDescriptors& des
         auto second_min_index = getIndexOfNearest(descriptors2[first_min_index], descriptors1);
         if (second_min_index == i) {
             matches.emplace_back(i, first_min_index);
+        }
+    }
+
+    return matches;
+}
+
+ResultOfComparision Descriptors::compareDescriptors(const ListOfRIDescriptors& descriptors1,
+                                                    const ListOfRIDescriptors& descriptors2){
+    ResultOfComparision matches;
+    matches.reserve(min(descriptors1.size(), descriptors2.size()));
+    vector<size_t> lp(descriptors1.size());
+    vector<size_t> rp(descriptors2.size());
+
+    vector<double> left(descriptors1.size());
+    vector<double> right(descriptors2.size());
+    fill(begin(left), end(left), numeric_limits<double>::max());
+    fill(begin(right), end(right), numeric_limits<double>::max());
+
+    double thres = 7e-1;
+    for (size_t i = 0; i < descriptors1.size(); i++) {
+        for (size_t j = 0; j < descriptors2.size(); j++) {
+            double cur = 0;
+            for (size_t k = 0; k < 128; k++) {
+                double dim = get<0>(descriptors1[i])[k] - get<0>(descriptors2[j])[k];
+                cur += dim * dim;
+            }
+            if (left[i] > cur) {
+                left[i] = cur;
+                lp[i] = j;
+            }
+            if (right[j] > cur) {
+                right[j] = cur;
+                rp[j] = i;
+            }
+        }
+    }
+
+    for (size_t i = 0; i < descriptors1.size(); i++) {
+        int j = lp[i];
+        if (rp[j] == i && left[i] <= thres * thres) {
+            matches.push_back(make_pair(i, j));
         }
     }
 
@@ -97,6 +143,7 @@ QImage Descriptors::getMergedMatrix(const Matrix& mat1,
 
     return result;
 }
+
 
 Descriptors::Builder::Builder()
 {}
@@ -255,7 +302,7 @@ Descriptors::Builder& Descriptors::Builder::rotationInvariantDescriptors()
     Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
 
     const int DRAD = 4;
-    double sqs = DRAD / 2.;
+    double sqs = DRAD / 2;
     sqs *= sqs;
     Orientations orientations(binsOfWideHistogram);
     std::vector<int> dirs;
