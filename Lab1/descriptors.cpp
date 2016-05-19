@@ -222,8 +222,8 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
     const Matrix sobelY = Sobel::Builder(matrix).sobelY().build().getMatrix();
     Matrix gradientOrientations = Sobel::Builder().gradientOrientiations(sobelX, sobelY).build().getMatrix();
     
-    const int DRAD = 8;
-    double t = DRAD / 2;
+    const int descriptorRadius = 8;
+    double t = descriptorRadius / 2;
     t *= t;
     Orientations orientations(binsOfWideHistogram);
     std::vector<int> peaks;
@@ -244,10 +244,10 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
         std::fill(begin(orientations), end(orientations), 0);
         
         //search for main orientation
-        for (int i = -DRAD; i <= DRAD; ++i) {
-            for (int j = -DRAD; j <= DRAD; ++j) {
+        for (int i = -descriptorRadius; i <= descriptorRadius; ++i) {
+            for (int j = -descriptorRadius; j <= descriptorRadius; ++j) {
                 //skip if vector is bigger than descriptor's radius
-                if (i * i + j * j > DRAD * DRAD)
+                if (i * i + j * j > descriptorRadius * descriptorRadius)
                     continue;
                 int qy = y + i;
                 int qx = x + j;
@@ -313,10 +313,10 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
             get<3>(descriptor) = orientation;
             
             //building descriptor's histograms
-            for (int i = -DRAD; i <= DRAD; i++) {
-                for (int j = -DRAD; j <= DRAD; j++) {
+            for (int i = -descriptorRadius; i <= descriptorRadius; i++) {
+                for (int j = -descriptorRadius; j <= descriptorRadius; j++) {
                     //skip if vector is bigger than descriptor's radius
-                    if (i * i + j * j > DRAD * DRAD)
+                    if (i * i + j * j > descriptorRadius * descriptorRadius)
                         continue;
                     int qy = y + i;
                     int qx = x + j;
@@ -348,8 +348,8 @@ Descriptors::Builder& Descriptors::Builder::descriptors()
                     qx = j * cosl(orientation) - i * sinl(orientation);
                     
                     //get current histogram's index in grid
-                    int curHistogramIndexByY = (qy + DRAD) * histogramSize / (DRAD * 2);
-                    int curHistogramIndexByX = (qx + DRAD) * histogramSize / (DRAD * 2); 
+                    int curHistogramIndexByY = (qy + descriptorRadius) * histogramSize / (descriptorRadius * 2);
+                    int curHistogramIndexByX = (qx + descriptorRadius) * histogramSize / (descriptorRadius * 2); 
                     
                     //check for rounding error
                     if (curHistogramIndexByY < 0)
